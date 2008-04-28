@@ -43,6 +43,6 @@ Biometrika, volume 82, number 2, pages 439-446
 }
 \examples{
 data(paulino)
-max.like(paulino)
+maximum_likelihood(paulino)
 }
 \keyword{datasets}

@@ -42,6 +42,9 @@ multinomial_matrix_to_HD(x, calculate_NC = FALSE, ...)
   observations with likelihood given by \code{mult_restricted_obs()}
   (qv).
 }
+\value{
+  Returns a hyperdirichlet object
+}
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{mult_restricted_obs}}}
 \examples{

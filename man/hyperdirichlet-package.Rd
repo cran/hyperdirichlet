@@ -82,6 +82,6 @@ Robin K. S. Hankin
   jj <- jj + mult_restricted_obs(6, 1:3, c(4,5,2))
 
 data(icons)
-max.like(as.hyperdirichlet(icons))
+maximum_likelihood(as.hyperdirichlet(icons))
 
 }

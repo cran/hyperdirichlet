@@ -4,28 +4,45 @@ setClass("hyperdirichlet",
          )
 
 setGeneric("NC",function(x){standardGeneric("NC")})
-setMethod("NC","hyperdirichlet",function(x){x@NC})
+setMethod("NC","hyperdirichlet",
+          function(x){x@NC}
+          )
 
 setGeneric("params",function(x){standardGeneric("params")})
-setMethod("params","hyperdirichlet",function(x){x@.Data})
+setMethod("params","hyperdirichlet",
+          function(x){x@.Data}
+          )
 
 setGeneric("pnames",function(x){standardGeneric("pnames")})
-setMethod("pnames","hyperdirichlet",function(x){x@pnames})
+setMethod("pnames","hyperdirichlet",
+          function(x){x@pnames}
+          )
 
 setGeneric("validated",function(x){standardGeneric("validated")})
-setMethod("validated","hyperdirichlet",function(x){x@validated})
-
+setMethod("validated","hyperdirichlet",
+          function(x){x@validated}
+          )
 
                                         # There are no occurrences of
                                         # "@" below this line.
 
-
 setGeneric("pnames<-",function(x,value){standardGeneric("pnames<-")})
-setMethod("pnames<-","hyperdirichlet",function(x,value){hyperdirichlet(params(x),NC=NC(x),pnames=value,validated=TRUE)})
+setMethod("pnames<-","hyperdirichlet",
+          function(x,value){
+            hyperdirichlet(params(x),NC=NC(x),pnames=value,validated=TRUE)
+          }
+          )
 
-setMethod("dim","hyperdirichlet",function(x){round(log(length(params(x)))/log(2))})
 
-".hd_mean" <- function(x, normalize=TRUE, ...){
+
+# dim() is a primitive function so calling setGeneric("dim") is
+# currently unnecessary.
+
+setMethod("dim","hyperdirichlet",
+          function(x){round(log(length(params(x)))/log(2))}
+          )
+
+".mean_hyperdirichlet" <- function(x, normalize=TRUE, ...){
   f <- function(i){
     jj <- rep(0,dim(x))
     jj[i] <- 1
@@ -39,7 +56,7 @@ setMethod("dim","hyperdirichlet",function(x){round(log(length(params(x)))/log(2)
 }
   
 setGeneric("mean")
-setMethod("mean" , "hyperdirichlet", .hd_mean)
+setMethod("mean" , "hyperdirichlet", .mean_hyperdirichlet)
 
 ".hd_add" <- function(e1,e2){
   stopifnot(is.hyperdirichlet(e1) & is.hyperdirichlet(e2))
@@ -84,15 +101,15 @@ setMethod("mean" , "hyperdirichlet", .hd_mean)
     return(.hd_binary_op_error(e1,e2))
   } 
   if(is.hyperdirichlet(e1) & is.numeric(e2)){
-    return(.hd_prod_scalar(e1,e2))
+    return(.hd_prod_scalar_worker(e1,e2))
   } else if(is.numeric(e1) & is.hyperdirichlet(e2)){
-    return(.hd_prod_scalar(e2,e1))  # arguments e1 and e2 transposed
+    return(.hd_prod_scalar_worker(e2,e1))  # arguments e1 and e2 transposed
   } else {
     stop("this cannot happen")
   }
 }
 
-".hd_prod_scalar" <- function(e1,e2){
+".hd_prod_scalar_worker" <- function(e1,e2){ # this function does the work
   if( !(is.hyperdirichlet(e1) & is.numeric(e2))){
     stop("e1 must be hyperdirichlet and e2 must be numeric")
   }
@@ -116,7 +133,7 @@ setMethod("Arith",signature(e1 = "ANY" , e2="hyperdirichlet")   , .hd_binary_op_
 
 "is.hyperdirichlet" <- function(x){is(x,"hyperdirichlet")}
 
-".hd.valid" <- function(object){
+".hd_valid" <- function(object){
 
   x <- params(object)
   normc <- NC(object)
@@ -141,11 +158,13 @@ setMethod("Arith",signature(e1 = "ANY" , e2="hyperdirichlet")   , .hd_binary_op_
   }
 }
 
-setValidity("hyperdirichlet", .hd.valid)
+setValidity("hyperdirichlet", .hd_valid)
 
-setGeneric("as.hyperdirichlet",function(x, calculate_NC=FALSE, ...){standardGeneric("as.hyperdirichlet")})
+setGeneric("as.hyperdirichlet",
+           function(x, calculate_NC=FALSE, ...){standardGeneric("as.hyperdirichlet")}
+           )
 
-".as.hd" <- function(x, calculate_NC, validated=FALSE,  ...){
+".as_hyperdirichlet" <- function(x, calculate_NC, validated=FALSE,  ...){
   if(is.hyperdirichlet(x)){
     pn <- pnames(x)
   } else {
@@ -213,20 +232,16 @@ setGeneric("as.hyperdirichlet",function(x, calculate_NC=FALSE, ...){standardGene
   return(out)
 }
 
-setMethod("as.hyperdirichlet","hyperdirichlet", .as.hd )
-setMethod("as.hyperdirichlet","numeric", .as.hd )
+setMethod("as.hyperdirichlet","hyperdirichlet", .as_hyperdirichlet )
+setMethod("as.hyperdirichlet","numeric", .as_hyperdirichlet)
 setMethod("as.hyperdirichlet","matrix", matrix_to_HD)
 
-setAs("numeric", "hyperdirichlet", function(from){ hyperdirichlet(from) })
-setAs("matrix" , "hyperdirichlet", function(from){ matrix_to_HD(from)} )
-
-"head.hyperdirichlet" <- function(x, n=6, ...){
-  print.hyperdirichlet(x, n=n, do_head = TRUE, ...)
-}
-
-"tail.hyperdirichlet" <- function(x, n=6, ...){
-  print.hyperdirichlet(x, n=n, do_head = FALSE, ...)
-}
+setAs("numeric", "hyperdirichlet",
+      function(from){ hyperdirichlet(from)}
+      )
+setAs("matrix" , "hyperdirichlet",
+      function(from){ matrix_to_HD(from)}
+      )
 
 "hyperdirichlet" <- function(x, NC, pnames=character(), validated=FALSE){
   if(length(x)==1){ return(uniform(x))}
@@ -236,7 +251,22 @@ setAs("matrix" , "hyperdirichlet", function(from){ matrix_to_HD(from)} )
   new("hyperdirichlet" , x , NC=NC , pnames=pnames, validated=validated)  # This is the only time new() is called
 }
 
-".hyperdirichlet.print" <- function(x, n=0, do_head = NA, ...){
+".head_hyperdirichlet" <- function(x, n=6, ...){
+  .print_hyperdirichlet(x, n=n, do_head = TRUE, ...)
+}
+
+".tail_hyperdirichlet" <- function(x, n=6, ...){
+  .print_hyperdirichlet(x, n=n, do_head = FALSE, ...)
+}
+
+setGeneric("head")
+setGeneric("tail")
+
+setMethod("head" , signature="hyperdirichlet" , .head_hyperdirichlet)
+setMethod("tail" , signature="hyperdirichlet" , .tail_hyperdirichlet)
+
+".print_hyperdirichlet_worker" <- 
+function(x, n=0, do_head = NA, ...){ # This function does the work
   out <- cbind(binmat(dim(x),pnames=pnames(x)),params=params(x),powers=powers(x))
   rownames(out) <- paste("[", seq_len(nrow(out)),"]",sep="")
   if(n==0){
@@ -250,8 +280,8 @@ setAs("matrix" , "hyperdirichlet", function(from){ matrix_to_HD(from)} )
   }
 }
     
-"print.hyperdirichlet" <- function(x, n=0, do_head = TRUE, ...){
-  jj <- .hyperdirichlet.print(x, n=n, do_head=do_head, ...)
+".print_hyperdirichlet" <- function(x, n=0, do_head = TRUE, ...){
+  jj <- .print_hyperdirichlet_worker(x, n=n, do_head=do_head, ...)
   print(jj)
   cat("\n")
   if(is.na(NC(x))){
@@ -260,10 +290,12 @@ setAs("matrix" , "hyperdirichlet", function(from){ matrix_to_HD(from)} )
   } else {
     cat(paste("Normalizing constant: ", NC(x),"\n"))
   }
-  return(invisible(x))
+  return(invisible(jj))
 }
 
-setMethod("show", "hyperdirichlet", function(object){print.hyperdirichlet(object)})
+setMethod("show", "hyperdirichlet",
+          function(object){.print_hyperdirichlet(object)}
+          )
 
 ".get_logical" <- function(x){   
   sum((2^((length(x)-1):0))[x])
@@ -318,6 +350,11 @@ setReplaceMethod("[", signature(x="hyperdirichlet"),
     x <- as.hyperdirichlet(x, calculate_NC=FALSE)
   }
   n <- dim(x)-1  # "-1" because this is the dimension of the integrand, not the number of p's.
+
+  ## First, special dispensation for the Dirichlet:
+  if(is.null(disallowed) & is.dirichlet(x)){
+    return(.diri_norm(params(x)[.pow2(dim(x))]))
+  }
   
   if(is.null(disallowed)){
     f <- function(e){
@@ -425,27 +462,69 @@ function(p, HD, include.NC = FALSE, TINY = 1e-10, log=FALSE){
 }
 
 "dirichlet" <-
-function(params, powers){
+function(params, powers, pnames){
   if ( !xor(missing(params),missing(powers))){
     stop("supply exactly one of params or powers")
   }
 
   if(missing(params)){
     x <- powers+1
-    pnamesx <- names(powers)
   } else {
     x <- params
-    pnamesx <- names(params)
   }
-
+  
+  if(missing(pnames)){
+    pnamesx <- names(x)
+  } else {
+    pnamesx <- pnames
+  } 
+    
   if(any(x<0)){
     stop("parameters must be positive; powers must be >1")
   }
   
   lx <- length(x)
   out <- rep(0,2^lx)
-  out[1+2^(0:(lx-1))] <- rev(x)
-  return(hyperdirichlet(out, NC=prod(gamma(x))/gamma(sum(x)),validated=TRUE, pnames=pnamesx))
+  out[.pow2(lx)] <- rev(x)
+  return(hyperdirichlet(out, NC=.diri_norm(x),validated=TRUE, pnames=pnamesx))
+}
+
+".pow2" <- function(n){
+  1+2^(0:(n-1))
+}
+
+".diri_norm" <- function(x){
+  ##  prod(gamma(x))/gamma(sum(x))
+  exp(sum(lgamma(x))-lgamma(sum(x)))
+}
+
+".gd_norm" <- function(a,b){
+  ## prod(beta(a,b))
+  exp(sum(lbeta(a,b)))
+}
+
+"is.dirichlet" <- function(x){
+  p <- params(x)
+  if(all(p[-.pow2(dim(x))] == 0)){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+"dirichlet_params" <- function(x){
+  out <- params(x)[rev(.pow2(dim(x)))]
+  jj <- pnames(x)
+  if(length(jj) > 0){
+    names(out) <- pnames(x)
+  }
+  return(out)
+}
+
+"dirichlet_params<-" <- function(x,value){
+  jj <- params(x)
+  jj[rev(.pow2(dim(x)))] <- value
+  return(hyperdirichlet(jj , pnames=pnames(x)))
 }
 
 "uniform" <-
@@ -552,7 +631,7 @@ function(a, b, b0=0, pnames=NULL){
 
   }
   out[2^k] <- b0 - (a[1]+b[1])
-  return(hyperdirichlet(out,prod(beta(a,b)),validated=TRUE,pnames=pnames))
+  return(hyperdirichlet(out, .gd_norm(a,b), validated=TRUE,pnames=pnames))
 }
 
 "is.proper" <-
@@ -563,7 +642,6 @@ function(x, irregardless=FALSE){
   if(is.hyperdirichlet(x)){x <- params(x)}
   n <- round(log(length(x))/log(2))
   jj <- binmat(n)
-  f <- 
   for(i in seq_len(2^n-1)){
     ref <- as.logical(jj[i,,drop=TRUE])
     wanted <- apply(jj,1,function(a){identical(ref,ref|as.logical(a))})
@@ -615,16 +693,17 @@ function(x, powers, ...){
     B(x+dirichlet(powers=powers), ...) / B(x, ...)
   }
 
-"max.like"<- function(HD, start_p = NULL, give=FALSE, disallowed = NULL, zero=NULL, ...){
+"maximum_likelihood"<- function(HD, start_p = NULL, give=FALSE, disallowed = NULL, zero=NULL, ...){
   if(is.null(zero)){
-    return(maximum_likelihood(HD=HD, start_p=start_p , give=give , disallowed=disallowed , ...))
+    return(mle(HD=HD, start_p=start_p , give=give , disallowed=disallowed , ...))
   } else {
-    return(maxlike_restricted(HD=HD , start_p=start_p , give=give, disallowed=disallowed , zero=zero, ...))
+    return(mle_restricted(HD=HD , start_p=start_p , give=give, disallowed=disallowed , zero=zero, ...))
   }
 }
 
-"maximum_likelihood" <- function(HD, start_p = NULL, give=FALSE, disallowed = NULL, ...){
-  parameters <- params(as.hyperdirichlet(HD, FALSE))
+"mle" <- function(HD, start_p = NULL, give=FALSE, disallowed = NULL, ...){
+  stopifnot(is.hyperdirichlet(HD))
+  parameters <- params(HD)
   
   n <- dim(HD)
   if(is.null(start_p)){
@@ -676,8 +755,7 @@ function(x, powers, ...){
   }
 }
 
-
-"maxlike_restricted" <- function(HD, start_p = NULL, give=FALSE, disallowed = NULL,  zero=NULL, ...){
+"mle_restricted" <- function(HD, start_p = NULL, give=FALSE, disallowed = NULL,  zero=NULL, ...){
   parameters <- params(as.hyperdirichlet(HD, FALSE))
   
   n <- dim(HD)
@@ -786,7 +864,7 @@ function(x, powers, ...){
 }
 
 "rhyperdirichlet" <- 
-function (HD, n=10, start=NULL, sigma=NULL) {
+function (n, HD, start=NULL, sigma=NULL) {
     d <- dim(HD)
     if(is.null(sigma)){sigma <- 1/d}
     out <- matrix(NA, n, d)
@@ -825,3 +903,61 @@ function (HD, n=10, start=NULL, sigma=NULL) {
   return(calculate_B(x , disallowed=disallowed , give=FALSE, ...) / B(x, ...))
 }
 
+
+"fitz" <- function(dat, include.missing=TRUE, validated=NULL){
+
+  stopifnot(length(dat) == 26)
+
+  if(is.null(validated)){
+    if(any(dat<0)){
+      warning("some data negative.  Setting validated to FALSE")
+      validated <- FALSE
+    } else {
+      validated <- TRUE
+    }
+  }
+  
+  n <- 3
+  b <- uniform(2^n)
+  pnames(b) <- 
+    apply(as.matrix(expand.grid(rep(list(c("T","F")),n)))[,rev(seq_len(n))],1,paste,collapse="")
+  
+  f <- function(...){
+    out <- rep(FALSE,2^n)
+    out[c(list(...),recursive=TRUE)] <- TRUE
+    return(out)
+  }
+  
+  b <- "[<-"(b,f(1), value = dat[1] + 1, validated=validated)
+  b <- "[<-"(b,f(2), value = dat[2] + 1, validated=validated)
+  b <- "[<-"(b,f(3), value = dat[3] + 1, validated=validated)
+  b <- "[<-"(b,f(4), value = dat[4] + 1, validated=validated)
+  b <- "[<-"(b,f(5), value = dat[5] + 1, validated=validated)
+  b <- "[<-"(b,f(6), value = dat[6] + 1, validated=validated)
+  b <- "[<-"(b,f(7), value = dat[7] + 1, validated=validated)
+  b <- "[<-"(b,f(8), value = dat[8] + 1, validated=validated)
+  
+  if(include.missing){
+    b <- "[<-"(b,f(1,5), value = dat[09], validated=validated)
+    b <- "[<-"(b,f(2,6), value = dat[10], validated=validated)
+    b <- "[<-"(b,f(3,7), value = dat[11], validated=validated)
+    b <- "[<-"(b,f(4,8), value = dat[12], validated=validated)
+    b <- "[<-"(b,f(1,3), value = dat[13], validated=validated)
+    b <- "[<-"(b,f(2,4), value = dat[14], validated=validated)
+    b <- "[<-"(b,f(5,7), value = dat[15], validated=validated)
+    b <- "[<-"(b,f(6,8), value = dat[16], validated=validated)
+    b <- "[<-"(b,f(1,2), value = dat[17], validated=validated)
+    b <- "[<-"(b,f(3,4), value = dat[18], validated=validated)
+    b <- "[<-"(b,f(5,6), value = dat[19], validated=validated)
+    b <- "[<-"(b,f(7,8), value = dat[20], validated=validated)
+    
+    b <- "[<-"(b,f(1,3,5,7), value = dat[21], validated=validated)
+    b <- "[<-"(b,f(2,4,6,8), value = dat[22], validated=validated)
+    b <- "[<-"(b,f(1,2,5,6), value = dat[23], validated=validated)
+    b <- "[<-"(b,f(3,4,7,8), value = dat[24], validated=validated)
+    b <- "[<-"(b,f(1,2,3,4), value = dat[25], validated=validated)
+    b <- "[<-"(b,f(5,6,7,8), value = dat[26], validated=validated)
+  }
+  
+  return(b)
+}

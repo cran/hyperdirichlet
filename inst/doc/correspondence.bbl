@@ -1,0 +1,64 @@
+\begin{thebibliography}{8}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Altham(1971)}]{altham1971}
+Altham PME (1971).
+\newblock \enquote{The analysis of matched proportions.}
+\newblock \emph{Biometrika}, \textbf{58}(3), 561--576.
+
+\bibitem[{Altham(2009)}]{altham2009}
+Altham PME (2009).
+\newblock Worksheet 20,
+  \urlprefix\url{http://www.statslab.cam.ac.uk/~pat/misc.ps}.
+
+\bibitem[{Chen and Little(1999)}]{chen1999}
+Chen HY, Little RJA (1999).
+\newblock \enquote{A test of missing completely at random for generalized
+  estimating equations.}
+\newblock \emph{Biometrika}, \textbf{86}, 1--13.
+
+\bibitem[{Edwards(1992)}]{edwards1992}
+Edwards AWF (1992).
+\newblock \emph{Likelihood (Expanded Edition)}.
+\newblock John Hopkins.
+
+\bibitem[{Hankin(2009)}]{hankin2009}
+Hankin RKS (2009).
+\newblock \emph{hyperdirichlet: A generalization of the Dirichlet
+  distribution}.
+\newblock \proglang{R} package version 1.1-6; vignette therein based on a
+  manuscript under review at the {\em Journal of Statistical Software},
+  \urlprefix\url{http://www.R-project.org}.
+
+\bibitem[{Lin \emph{et~al.}(2009)Lin, Lipsitz, Sinha, Gawande, Regenbogen, and
+  Greenberg}]{lin2009}
+Lin Y, Lipsitz S, Sinha D, Gawande AA, Regenbogen SE, Greenberg CC (2009).
+\newblock \enquote{Using {B}ayesian $p$-values in a $2\times 2$ table of
+  matched pairs with incompletely classified data.}
+\newblock \emph{Journal of the Royal Statistical Society, Series C},
+  \textbf{58}(2).
+\newblock \doi{10.1111/j.1467-9876.2008.00645.x}.
+\newblock Published Online: Jan 22 2009 5:54PM.
+
+\bibitem[{{\proglang{R} Development Core Team}(2008)}]{rcore2008}
+{\proglang{R} Development Core Team} (2008).
+\newblock \emph{\proglang{R}: A Language and Environment for Statistical
+  Computing}.
+\newblock \proglang{R} Foundation for Statistical Computing, Vienna, Austria.
+\newblock {ISBN} 3-900051-07-0, \urlprefix\url{http://www.R-project.org}.
+
+\bibitem[{West and Hankin(2008)}]{west2008}
+West L, Hankin RKS (2008).
+\newblock \enquote{Exact tests for two-way contingency tables with structural
+  zeros.}
+\newblock \emph{Journal of Statistical Software}, \textbf{28}(11).
+
+\end{thebibliography}

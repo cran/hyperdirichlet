@@ -1,17 +1,17 @@
 \name{maximum_likelihood}
 \alias{maximum_likelihood}
-\alias{max.like}
 \alias{maximum.likelihood}
-\alias{maxlike_restricted}
+\alias{mle}
+\alias{mle_restricted}
 \title{Maximum likelihood point for the hyperdirichlet distribution}
 \description{
   Maximum likelihood point for the hyperdirichlet distribution as
   estimated using numerical maximization.
 }
 \usage{
-max.like(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NULL, ...)
-maximum_likelihood(HD, start_p = NULL, give = FALSE, disallowed = NULL, ...)
-maxlike_restricted(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NULL, ...)
+maximum_likelihood(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NULL, ...)
+               mle(HD, start_p = NULL, give = FALSE, disallowed = NULL,            ...)
+    mle_restricted(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NULL, ...)
 }
 \arguments{
   \item{HD}{Object of class hyperdirichlet}
@@ -27,25 +27,30 @@ maxlike_restricted(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NUL
   \item{\dots}{Further arguments sent to \code{optim()}}
 }
 \details{
-  The user should use \code{max.like()} which dispatches to the other
-  functions depending on whether argument \code{zero} is or is not
-  \code{NULL}.
+
+The user should use function \code{maximum_likelihood()}, which is a
+user-friendly wrapper for one of the two functions (\code{mle()} or
+\code{mle_rst()}) depending on whether argument \code{zero} is or is not
+\code{NULL}.
   
-  Argument \code{start_p} specifies the start point for the
-  optimization; default \code{NULL} is interpreted as \code{rep(1/n,n)}
-  where \code{n} is \code{dim(HD)} (ie neutral position).
+Argument \code{start_p} specifies the start point for the optimization;
+default \code{NULL} is interpreted as \code{rep(1/n,n)} where \code{n}
+is \code{dim(HD)} (ie neutral position).
 
-  It is not necessary to normalize \code{start_p}: this is done by
-  \code{dhyperdirichlet()}. 
+It is not necessary to normalize \code{start_p}: this is done by
+\code{dhyperdirichlet()}. 
 
-  Non-default values for this argument are interpreted by
-  \code{dhyperdirichlet()}.
+Non-default values for this argument are interpreted by
+\code{dhyperdirichlet()}.
 
-  Argument \code{zero} of function \code{maxlike_restricted()} is
-  Boolean in the standard case; but if it is not Boolean, it is
-  interpreted as a numeric vector of integers indicating which
-  components of the distribution are restricted to zero.  An example is
-  given below.
+Argument \code{zero}, if not default \code{NULL}, is Boolean in the
+standard case; but if it is not Boolean, it is interpreted as a numeric
+vector of integers indicating which components of the distribution are
+restricted to zero.  An example is given below.
+  
+}
+\value{
+  Returns a \eqn{k}-tuple.
 }
 \note{
   The functions minimize \code{-dhyperdirichlet(...,log=TRUE)}; so there
@@ -57,10 +62,9 @@ maxlike_restricted(HD, start_p = NULL, give = FALSE, disallowed = NULL, zero=NUL
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{dhyperdirichlet_p}},\code{\link{optim}}}
 \examples{
-max.like(dirichlet(1:4))      # Should be 0:3
+maximum_likelihood(dirichlet(1:4))      # Should be 0:3
 
-jj.numerical <- maxlike_restricted(dirichlet(3:8), zero=2:3)$MLE
-
+jj.numerical <- maximum_likelihood(dirichlet(3:8), zero=2:3)$MLE
 
 jj <- c(2,0,0,5,6,7)
 jj.analytical <- jj/sum(jj)

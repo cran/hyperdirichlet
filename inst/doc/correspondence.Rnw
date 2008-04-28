@@ -62,12 +62,12 @@ Wilberforce Road\\
 Cambridge CB3 0WB\\
 \\
 Robin K. S. Hankin (corresponding author)\\
-  Cambridge Centre for Climate Change Mitigation\\
+  Cambridge Centre for Climate Change Mitigation Research\\
   University of Cambridge\\
   19 Silver Street\\
   Cambridge CB3 9EP\\
   United Kingdom\\
-  E-mail: \email{rksh1@cam.ac.uk}\\
+  E-mail: \email{hankin.robin@gmail.com}\\
   URL: \url{http://www.landecon.cam.ac.uk/staff/profiles/rhankin.htm}
 }
 
@@ -292,7 +292,7 @@ hyperdirichlet \proglang{R} package~\citep{hankin2009}.
 if(calculate_from_scratch){
   number <- 10000
   set.seed(0)
-  d <- rhyperdirichlet(b, n=number)
+  d <- rhyperdirichlet(n=number, b)
   sam <- apply(d,1,function(x){x[2]/(x[2]+x[3])})
   rb <-  rbeta(number,2,6)
 } else {
@@ -357,12 +357,12 @@ advantageous because multidimensional integration is not needed.
 First, find the maximum likelihood estimate for the distribution:
 
 <<mlb,echo=FALSE,print=FALSE,cache=TRUE>>=
-mlb <- max.like(b)
+mlb <- maximum_likelihood(b)
 @ 
 
 \begin{Schunk}
   \begin{Sinput}
-    max.like(b)
+    maximum_likelihood(b)
   \end{Sinput}
 \end{Schunk}
 
@@ -387,13 +387,13 @@ that~$\theta_{01}<\theta_{10}$ is given by
 
 <<mlbf3, echo=FALSE, print=FALSE, cache=TRUE>>=
 f3 <- function(x){x[2]<x[3]}
-mlb.f3 <- max.like(b,disallowed=f3)
+mlb.f3 <- maximum_likelihood(b,disallowed=f3)
 @ 
 
 \begin{Schunk}
   \begin{Sinput}
     f3 <- function(x){x[2]<x[3]}
-    max.like(b,disallowed=f3)
+    maximum_likelihood(b,disallowed=f3)
   \end{Sinput}
 \end{Schunk}
 

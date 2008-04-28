@@ -52,7 +52,12 @@ as.hyperdirichlet(x, calculate_NC = FALSE , ...)
   If \code{x} is a matrix, be sure to specify the \code{bernoulli}
   argument, which is passed on to \code{matrix_to_HD()}
   
-} 
+}
+\value{
+  Functions \code{hyperdirichlet()} and \code{as.hyperdirichlet()}
+  return a hyperdirichlet object; function \code{is.hyperdirichlet()}
+  returns a Boolean.
+}
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{B}},\code{\link{extract}},\code{\link{matrix_to_HD}}}
 \examples{

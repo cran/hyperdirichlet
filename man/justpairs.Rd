@@ -23,7 +23,7 @@ justpairs(x)
   
 }
 \value{
-Returns a hyperdirichlet distribution (without normalizing factor) of
+Returns a hyperdirichlet object (without normalizing factor) of
 dimension \code{nrow(x)}.
 
 

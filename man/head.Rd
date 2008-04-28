@@ -1,14 +1,15 @@
 \name{head}
+\docType{methods}
 \alias{head}
-\alias{head.hyperdirichlet}
-\alias{tail.hyperdirichlet}
+\alias{head,hyperdirichlet-method}
+\alias{tail,hyperdirichlet-method}
 \title{Head and tail}
 \description{
 Print the first few, or last few, lines of a hyperdirichlet object
 }
 \usage{
-head.hyperdirichlet(x, n = 6, ...)
-tail.hyperdirichlet(x, n = 6, ...)
+\S4method{head}{hyperdirichlet}(x, n = 6, ...)
+\S4method{tail}{hyperdirichlet}(x, n = 6, ...)
 }
 \arguments{
   \item{x}{object of class hyperdirichlet}
@@ -20,6 +21,11 @@ tail.hyperdirichlet(x, n = 6, ...)
   Prints the head or tail of the \code{binmat()} matrix and then prints
   the normalizing constant.
 }
+\value{
+  The functions documented here coerce to a matrix,  then return the
+  appropriate rows (as a matrix).
+}
+  
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{binmat}}}
 \examples{

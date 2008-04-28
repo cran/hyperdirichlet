@@ -2,6 +2,9 @@
 \alias{gd}
 \alias{Generalized Dirichlet}
 \alias{dirichlet}
+\alias{is.dirichlet}
+\alias{dirichlet_params}
+\alias{dirichlet_params<-}
 \alias{Dirichlet}
 \title{The Dirichlet and generalized Dirichlet distribution}
 \description{
@@ -9,12 +12,18 @@
   case of the hyperdirichlet distribution
 }
 \usage{
-dirichlet(params, powers)
+dirichlet(params, powers, pnames)
+is.dirichlet(x)
+dirichlet_params(x)
+dirichlet_params(x) <- value
 gd(a, b, b0 = 0, pnames = NULL)
 }
 \arguments{
   \item{params,powers}{Numeric vectors (supply exactly one) specifying
-    the parameters or the powers respectively of the Dirichlet distribution}
+    the parameters or the powers respectively of the Dirichlet
+    distribution}
+  \item{x}{Object of class hyperdirichlet}
+  \item{value}{Numeric vector}
   \item{a,b}{Numeric vectors of the same length specifying the
     parameters of the generalized Dirichlet distribution}
   \item{b0}{Arbitrary constant for the generalized Dirichlet
@@ -22,10 +31,18 @@ gd(a, b, b0 = 0, pnames = NULL)
   \item{pnames}{Character vector for name of the hyperdirichlet object}
 }
 \details{
-  Function \code{dirichlet()} returns the hyperdicichlet distribution
+  Function \code{dirichlet()} returns the hyperdirichlet distribution
   corresponding to the classical Dirichlet distribution.  If the vector
-  \code{params|powers} is a named vector, then  the hyperdirichlet object
-  inherits the names.
+  \code{params|powers} is a named vector, then the hyperdirichlet object
+  inherits the names (but the names are ignored if argument
+  \code{pnames} is supplied).
+
+  Function \code{is.dirichlet(x)} returns \code{TRUE} or \code{FALSE}
+  according to whether the hyperdirichlet object \code{x} is a Dirichlet
+  distribution.
+
+  Function \code{dirichlet_params()} returns the Dirichlet parameters of
+  a hyperdirichlet object.
   
   Function \code{gd()} returns the hyperdicichlet distribution
   corresponding to the generalized Dirichlet distribution of Connor and
@@ -63,6 +80,11 @@ gd(a, b, b0 = 0, pnames = NULL)
   the beta function.
   
 }
+\value{
+  Functions \code{dirichlet()} and \code{gd()} return a hyperdirichlet
+  object; function \code{is.dirichlet()} returns a logical; and function
+  \code{dirichlet_params()} returns a numeric vector.
+}
 \references{
   \itemize{
     \item R. J. Connor and J. E. Mosimann 1969.  \emph{Concepts of
@@ -77,12 +99,22 @@ gd(a, b, b0 = 0, pnames = NULL)
 \author{Robin K. S. Hankin}
 \note{
   These functions have cheaply evaluated analytic expressions for the
-  normalizing constant
+  normalizing constant.
+
+  If a hyperdirichlet object corresponds to a Dirichlet distribution,
+  this is relatively easy to detect [using \code{is.dirichlet()}].
+  However, the corresponding case for the generalized Dirichlet
+  distribution is not yet coded up, owing to the non-neutrality of the
+  GD.
+  
 }
 \seealso{\code{\link{justpairs}}}
 \examples{
 
-dirichlet(1:4)
+a <- dirichlet(1:4 , pnames=letters[1:4])
+is.dirichlet(a)  # should be TRUE
+dirichlet(dirichlet_params(a)) # should be 'a'
+
 gd(1:5,5:1)
 }
 \keyword{math}

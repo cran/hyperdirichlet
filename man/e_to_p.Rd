@@ -47,6 +47,9 @@ Jacobian(e)
   \deqn{J=\prod_{i=2}^{d-1}\left(1-e_i\right)^{d-i}}{J=\prod_{i=2}^{d-1}(1-e_i)^{d-i}}
   
 }
+\value{
+  The functions documented here return a scalar.
+}
 \references{
   M. Evans and T. Swartz 2000. \emph{Approximating Integrals via Monte
     Carlo and Deterministic Methods}, Oxford University Press; page 28
@@ -59,9 +62,10 @@ simplex; see the examples.
 \seealso{\code{\link{dhyperdirichlet}}}
 \examples{
 
-# First, try to calculate the volume of a 4-simplex:
+# First, try to calculate the volume of a regular 4-simplex:
 adapt(5,rep(0,5),rep(1,5),functn=function(x){Jacobian(c(1,x))})
 # Should be close to 1/5! = 1/120 ~= 0.008333
+# (that was the 'di trick')
 
 # Now, try to calculate the volume of a triangular-based pyramid:
 adapt(3,rep(0,3),rep(1,3),functn=Jacobian)

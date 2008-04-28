@@ -17,6 +17,12 @@ binmat(n, alternatives = NULL, pnames=NULL)
   \item{pnames}{Optional vector specifying the column names; default of
     \code{NULL} means to use \code{p1},\code{p2} etc}
 }
+\value{
+  Function \code{binmat(n)} returns an integer matrix of zeros and ones
+  with \eqn{2^n} rows and \eqn{n} columns.  In binary, the rows count
+  from \eqn{0} to \eqn{2^n-1}.
+}
+  
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{print.hyperdirichlet}}}
 \examples{

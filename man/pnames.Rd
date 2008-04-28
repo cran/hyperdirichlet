@@ -15,6 +15,10 @@ pnames(x) <- value
   \item{x}{Object of class hyperdirichlet}
   \item{value}{Names of the columns}
 }
+\value{
+  Function \code{pnames()} returns a \eqn{k}-tuple of names and function
+  \code{pnames<-()} returns a hyperdirichlet object.
+}
 \author{Robin K. S. Hankin}
 \note{
 The default is to leave the columns unnamed; the print method puts them

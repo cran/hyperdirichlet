@@ -52,12 +52,12 @@ probabilities are poorly identified.
 }
 \examples{
 data(volleyball)
-max.like(vb , start_p = c(0.407, 0.091, 0.432, 1.73e-05,
+maximum_likelihood(vb , start_p = c(0.407, 0.091, 0.432, 1.73e-05,
 2.24e-08, 1.9e-05, 1.8e-07, 0.03, 0.039) , control=list(maxit=100))
 
 
 zipf <- 1/seq_len(9)
-max.like(vb_synthetic , start_p=zipf, control=list(maxit=100))
+maximum_likelihood(vb_synthetic , start_p=zipf, control=list(maxit=100))
 
 }
 \keyword{datasets}

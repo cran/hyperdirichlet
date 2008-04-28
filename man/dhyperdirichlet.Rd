@@ -11,7 +11,7 @@ terms of either \eqn{p} or \eqn{e}; and random sampling using Metropolis-Hasting
 \usage{
 dhyperdirichlet_e(e, HD, include.Jacobian = TRUE)
 dhyperdirichlet(p, HD, include.NC = FALSE, TINY = 1e-10, log = FALSE)
-rhyperdirichlet(HD, n=10, start=NULL, sigma=NULL)
+rhyperdirichlet(n, HD, start=NULL, sigma=NULL)
 }
 \arguments{
   \item{HD}{Object of class \code{hyperdirichlet}, or coerced thereto}
@@ -46,6 +46,12 @@ rhyperdirichlet(HD, n=10, start=NULL, sigma=NULL)
   the \eqn{e_i}.  This is useful when integrating as the simplex (in
   p-space) transforms to a hypercube in e-space.
 }
+\value{
+  Functions \code{dhyperdirichlet()} and \code{dhyperdirichlet_e()}
+  return a scalar; function \code{rhyperdirichlet()} returns a matrix
+  whose rows are \eqn{k}-tuples
+}
+  
 \author{Robin K. S. Hankin}
 \note{
   Function \code{dhyperdirichlet()} silently normalizes \code{p} by
@@ -60,7 +66,7 @@ rhyperdirichlet(HD, n=10, start=NULL, sigma=NULL)
 
 dhyperdirichlet(c(1,4,3,2)/10, dirichlet(1:4))
 
-rhyperdirichlet(dirichlet(1:3),20)
+rhyperdirichlet(20, dirichlet(1:3))
 
 diff(c(0,sort(runif(9)),1))  # random sample drawn from dirichlet(rep(1,10))
 

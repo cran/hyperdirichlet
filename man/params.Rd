@@ -22,10 +22,11 @@ powers(x)
   The two functions differ only in single-p combinations (by one).
 
 }
+\value{
+  These functions return a vector of length \code{2^dim(x)}.
+  }
 \note{
-
   The default print method gives powers and parameters.
-  
 }
 \examples{
 

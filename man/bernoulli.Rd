@@ -71,7 +71,10 @@ bernoulli_obs(d, winners, losers)
   }
 
 See examples section.
+}
 
+\value{
+  All functions documented here return a hyperdirichlet object.
 }
 \author{Robin K. S. Hankin}
 \note{The hyperdirichlet distributions returned by the functions

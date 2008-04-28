@@ -68,11 +68,11 @@ validated(x)
 
     \item Function \code{mean()} returns the mean value of the
     hyperdirichlet distribution.  This is computationally slow (consider
-    \code{max.like()} for a measure of central tendency).  The function
-    takes a \code{normalize} argument, not passed to \code{adapt()}:
-    this is Boolean with \code{FALSE} meaning to return the value found
-    by integration directly, and default \code{TRUE} meaning to
-    normalize so the sum is exactly 1
+    \code{maximum_likelihood()} for a measure of central tendency).  The
+    function takes a \code{normalize} argument, not passed to
+    \code{adapt()}: this is Boolean with \code{FALSE} meaning to return
+    the value found by integration directly, and default \code{TRUE}
+    meaning to normalize so the sum is exactly 1
 
     \item Function \code{is.proper()} checks a hyperdirichlet
     distribution for being normalizable: a \dQuote{proper}
@@ -93,10 +93,20 @@ validated(x)
     Boolean variable with \code{TRUE} meaning that the object is
     \strong{known} to be \dQuote{proper} (ie \code{is.proper(x)} returns
     \code{TRUE}), so it is normalizable, even if the normalization
-    constant is not be known.  This flag is present because many
+    constant is not known.  This flag is present because many
     hyperdirichlet objects of interest are known \emph{a priori} to be
     proper, so executing \code{is.proper()} would be unnecessary.
   }
+}
+\value{
+  Functions \code{B()}, \code{NC()}, \code{calculate_NC()} notionally
+  return a scalar: the normalization constant
+
+  Functions \code{mean()} and \code{mgf()} return a \eqn{k}-tuple
+
+  Functions \code{is.proper()} and \code{validated()} return a Boolean
+
+  Function \code{probability()} returns a scalar, a probability.
 }
 \author{Robin K. S. Hankin}
 \seealso{\code{\link{hyperdirichlet}}}
@@ -105,6 +115,8 @@ validated(x)
 a <- hyperdirichlet(c(4,3,6,5,4,3,2,1))
 B(a)                                    # Not recommended
 a <- as.hyperdirichlet(a,TRUE)          # Recommended
+
+is.proper(a)
 
 mgf(a,powers=1:3)    # expectation of p1^1 * p2^2 * p3^3
 

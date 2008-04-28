@@ -11,22 +11,32 @@
 \description{
 
   Methods for Arithmetic functions on hyperdirichlet objects.  There are
-  only two
-  operations:
+  only two operations:
   \itemize{
     \item Add two of the same dimensions, as in \sQuote{\code{a+b}}
-    \item Multiply a hyperdirichlet object by a length-one scalar.
+    \item Multiply a hyperdirichlet object by a length-one scalar, as in
+    \sQuote{\code{a*5}} 
   }
   Both these operations result in the normalization constant becoming
   unknown.
 
   No unary operations are defined.
 }
+\author{Robin K. S. Hankin}
 \note{
   The package delegates \sQuote{\code{a+b}} to \code{hd_add()}, which
   the user should use if more control is desired.
 }
-\author{Robin K. S. Hankin}
+
+\value{
+  Arithmetic functions on hyperdirichlet objects return hyperdirichlet
+  objects.  Multiplication operates on the powers (not parameters), thus
+  it is defined so that \code{a+a = 2*a = a*2}; associativity means that
+  \code{a+...+a} (\eqn{n} copies) equals \code{n*a}.
+}
+
+  
+  
 \seealso{\code{\link{hd_add}}}  
 \examples{
 gd(1:3,1:3) + dirichlet(1:4)

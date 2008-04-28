@@ -26,10 +26,10 @@
 }
 \details{
 
-The matrix itself is printed using internal function
-\code{hyperdirichlet.print()}, which is not intended for the end user.
-
-The normalizing constant 
+The matrix itself is printed using internal functions
+\code{.print_hyperdirichlet()} and
+\code{.print_hyperdirichlet_worker()}, which are not intended for the
+end user.
 
 }
 \author{Robin K. S. Hankin}
