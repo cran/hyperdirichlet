@@ -32,8 +32,6 @@ hyperdirichlet objects of high dimension.
 Users may use the functional form for replacement to override this
 behaviour; the method takes \code{recalculate} and a \code{validated}
 arguments, defaulting to \code{FALSE}, that may be set if desired.
-
-
 }
 \examples{
 a <- uniform(4)

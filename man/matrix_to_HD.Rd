@@ -34,7 +34,7 @@ multinomial_matrix_to_HD(x, calculate_NC = FALSE, ...)
   playing, \code{1} for \sQuote{on the winning side} and \code{0} for
   \sQuote{on the losing side}.  Thus the Bernoulli trial is between
   \code{which(x==0)} and \code{which(x==1)}, with the latter winning.  A
-  warning is given unless there is at least one code{1} and at least one
+  warning is given unless there is at least one \code{1} and at least one
   \code{0} on each row.
 
   Function \code{multinomial_matrix_to_HD()} also operates on rows.
