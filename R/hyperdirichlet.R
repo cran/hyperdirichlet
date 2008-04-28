@@ -828,7 +828,7 @@ function(x, powers, ...){
   return(out)
 }
 
-"triplot" <- function(HD, l=100,  do_image = TRUE, do_contour = TRUE, discard=0.05, ...){
+"triplot" <- function(HD, l=100,  do_image = TRUE, do_contour = TRUE, discard=0.05, labels=NULL, ...){
   maxy <- sin(pi/3)
   x <- seq(0,1,len=l)
   y <- seq(0, maxy, len=l)
@@ -842,6 +842,7 @@ function(x, powers, ...){
   if(is.hyperdirichlet(HD)){
     stopifnot(dim(HD) == 3)
     f <- function(p){ ifelse(0 < p[1] & 0 < p[3], dhyperdirichlet(p=p , HD = HD, log=TRUE), NA) }
+    if(is.null(labels)){labels <- pnames(HD)}
   } else {
     f <- function(p){ ifelse(0 < p[1] & 0 < p[3], HD(p), NA) }
   }
@@ -863,8 +864,18 @@ function(x, powers, ...){
   segments(0.5 , 1 , 1   , 0 , lwd=4)
   segments(1   , 0 , 0   , 0 , lwd=4)
 
-  return(invisible(z))
-  
+    if(length(labels) == 3){
+    
+      jj <- 0.05
+      d1 <- jj*cos(pi/6)
+      d2 <- jj*sin(pi/6)
+      
+      text(0-d1  ,0-d2,labels[1])
+      text(0.5,   1+jj,labels[2])
+      text(1+d1  ,0-d2,labels[3])
+  }
+    
+    return(invisible(z)) 
 }
 
 "rhyperdirichlet" <- 

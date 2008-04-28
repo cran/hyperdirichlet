@@ -1,0 +1,431 @@
+ % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[nojss]{jss}
+\usepackage{dsfont}
+\usepackage{bbm}
+\usepackage{amsfonts}
+\usepackage{wasysym}
+\usepackage{amssymb}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% just as usual
+\author{P. M. E. Altham and Robin K. S. Hankin\\University of Cambridge}
+\title{Correspondence: Using recently developed software on a $\mathbf{\twobytwo}$ table of matched pairs with incompletely
+  classified data}
+%\VignetteIndexEntry{The hyperdirichlet distribution in practice}
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{P. M. E. Altham and Robin K. S. Hankin}
+\Plaintitle{Two by two tables with incompletely classified data}
+\Shorttitle{Two by two tables with incompletely classified data}
+
+\Keywords{Aylmer test, computational combinatorics,
+  \proglang{R}, hyperdirichlet distribution, Bayesian analysis}
+\Plainkeywords{Aylmer test, computational combinatorics,
+  R, hyperdirichlet distribution, Bayesian analysis}
+
+\Abstract{Recent work by~\citeauthor{lin2009} proposed a Bayesian
+  analysis of a \twobytwo table including incompletely classified
+  data.  Here, we subject the same dataset to further analysis using
+  recently developed techniques and software written in the
+  \proglang{R} programming language.  
+
+  This vignette is based on a manuscript submitted to the Journal of
+  the Royal Statistical Society Series C, as correspondence.
+
+  For reasons of performance, this vignette uses a preloaded dataset
+  (`here's one I prepared earlier').  To calculate the dataset from
+  scratch, set variable {\tt calculate\_from\_scratch} to {\tt TRUE}
+  in the first chunk.
+  }
+
+%% publication information
+%% NOTE: This needs to filled out ONLY IF THE PAPER WAS ACCEPTED.
+%% If it was not (yet) accepted, leave them commented.
+%% \Volume{13}
+%% \Issue{9}
+%% \Month{September}
+%% \Year{2004}
+%% \Submitdate{2004-09-29}
+%% \Acceptdate{2004-09-29}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+P. M. E. Altham \\
+Statistical Laboratory\\
+Centre for Mathematical Sciences\\
+Wilberforce Road\\
+Cambridge CB3 0WB\\
+\\
+Robin K. S. Hankin (corresponding author)\\
+  Cambridge Centre for Climate Change Mitigation Research\\
+  University of Cambridge\\
+  19 Silver Street\\
+  Cambridge CB3 9EP\\
+  United Kingdom\\
+  E-mail: \email{hankin.robin@gmail.com}\\
+  URL: \url{http://www.landecon.cam.ac.uk/staff/profiles/rhankin.htm}
+}
+
+%% need no \usepackage{Sweave.sty}
+\SweaveOpts{}
+
+\newcommand{\twobytwo}{\ensuremath{2\times 2}\ }
+
+\begin{document}
+
+
+<<set_calculate_from_scratch, echo=FALSE,print=FALSE>>=
+calculate_from_scratch <- FALSE
+@ 
+
+\cite{lin2009} propose a Bayesian analysis of an interesting dataset
+which included incompletely classified data; they extend a result
+published by~\cite{altham1971}.  Here, we subject the same dataset to
+further analysis using recently developed techniques and software
+written in the \proglang{R} programming language~\citep{rcore2008}.
+
+The dataset is given here for convenience as Table \ref{Linetal}.  It arises
+from~69 medical malpractice claims, and are the two Surgeon Reviewers' answers
+to the question: was there a communication breakdown in the hand-off between
+physicians caring for the patient? The rows of the Table correspond to the
+answers given by Reviewer~1, and the columns to the answers given by Reviewer~2.
+
+Following ~\cite{lin2009}, we adopt the notation given in Table
+\ref{Linetaldata} for the corresponding observed frequencies.\\
+
+
+\begin{table}[!th]
+\centering
+\begin{tabular} {|l| c  c  c c c|}
+\hline
+Reviewer 1 &\multicolumn{5}{c|}{Reviewer 2}\\ \cline{2-6}
+ $ \ $&Yes& No& Missing&\rule{2mm}{0mm}& Total\\
+\hline
+Yes& 26& 1&2&&29\\
+No & 5&18&9&&32\\
+Missing& 4&4&0&&8\\
+&&&&&\rule{0mm}{0mm}\\
+Total & 35 & 23 & 11 && 69\\  
+\hline
+\end{tabular}
+\caption{Two surgeon reviews of malpractice claims data}
+\label{Linetal}
+\end{table}
+
+
+\begin{table}[!th]
+\centering
+\begin{tabular} {|l| c  c  c c c|}
+\hline
+Reviewer 1 &\multicolumn{5}{c|}{Reviewer 2}\\ \cline{2-6}
+ $ \ $&Yes& No& Missing&\rule{2mm}{0mm}& Total\\
+\hline
+Yes     & $y_{11}$ & $y_{10}$& $z_{1+}$ && $y_{1+} + z_{1+}$\\
+No      & $y_{01}$ & $y_{00}$& $z_{0+}$ && $y_{0+} + z_{0+}$\\
+Missing & $u_{+1}$ & $u_{+0}$& $0$     && $ u_{++}$        \\
+&&&&&\rule{0mm}{0mm}\\
+Total & $y_{+1} + u_{+1}$ & $y_{+0} +u_{+0} $&$z_{++}$&&$n$ \\
+\hline
+\end{tabular}
+\caption{Notation for the data}
+\label{Linetaldata}
+\end{table}
+
+
+<<useayl,echo=FALSE,print=FALSE>>=
+require(aylmer)
+require(hyperdirichlet)
+@ 
+
+
+<<defa,echo=FALSE,print=FALSE>>=
+a <- matrix(c(26,1,2,5,18,9,4,4,NA),3,3,byrow=TRUE,dimnames=list("Reviewer 1"=c("yes","no", "missing"),"Reviewer 2"= c("yes", "no", "missing")))
+aylmer_test_for_a <- aylmer.test(a,alternative=function(x){x[1,2]-x[2,1]})
+@
+
+We now assess whether Reviewer~2 is giving significantly higher proportion of
+`Yes' responses than is Reviewer~1.  Although the McNemar test is applicable
+to the \twobytwo\ table of complete observations [the exact one-sided
+  $p$-value is~$\frac{7}{2^6}\simeq 0.1094$], we suggest using the `Aylmer
+test'~\citep{west2008}.  The \pkg{aylmer} \proglang{R} package is
+available at CRAN, \url{http://cran.r-project.org/}.
+
+The Aylmer test is a generalization of the Fisher Exact test which allows for
+the possibilities of structural zeros; the figure in the third row, third
+column of table~\ref{Linetal} is effectively a structural zero because we
+are not interested in cases not missed by both reviewers.
+
+In this case, the statistic of interest is the difference between row~1,
+column~2 and row~2, column~1 (=5-1=4):
+
+<<aylmertesta>>=
+a
+aylmer.test(a,alternative=function(x)x[1,2]-x[2,1])
+@ 
+
+and thus the $p$-value of \Sexpr{round(aylmer_test_for_a$p.value,4)}
+would indicate failure to reject the null hypothesis.
+We suggest our analysis is superior to the McNemar test because it
+does not disregard the partially classified data points.
+  
+%$
+  
+  
+\subsubsection{Cases missing at random}
+
+\citeauthor{lin2009} assess the hypothesis that the cases are missing at
+random, and use Fisher's exact test in a `somewhat informal way' to compare
+the marginal proportions of the \twobytwo\ table of complete cases with the
+marginal proportions in those missing a row or column variable; a $p$-value
+of~$0.046$ is reported.
+
+We again suggest using the Aylmer test.  In this case, the statistic of
+interest is row~2, column~3, which corresponds to the number of cases missed
+by reviewer~2 but were classified as ``no'' (as opposed to ``yes'') by
+reviewer~1.    The \proglang{R} idiom is straightforward:
+
+<<print.f1.aylmer.test,echo=TRUE,print=FALSE,cache=FALSE>>=
+f1 <- function(a)a[2,3]
+<<print=TRUE,echo=TRUE>>=
+aylmer.test(a,alternative=f1)
+@ 
+
+<<calc.aaf1,echo=FALSE,print=FALSE,cache=TRUE>>=
+aaf1 <- aylmer.test(a,alternative=f1)
+@ 
+
+The resulting $p$-value is \Sexpr{round(aaf1$p.value,4)},
+considerably lower than that from the Fisher test; this is consistent with the
+Aylmer test's using more data than \citeauthor{chen1999}.
+
+%$
+
+
+\subsection*{The hyperdirichlet distribution}
+
+The likelihood function of the data~$D$ may be taken as
+\begin{equation}
+L(\theta | D) \propto \prod_{ij}  {\theta_{ij}}^ {y_{ij}}
+\prod_i {\theta_{i+}}^ {z_{i+}} \prod_j {\theta_{+j}}^ {u_{+j}}
+\end{equation}
+
+for~$\sum\sum\theta_{ij}=1$, all taken to be non-negative.
+Here~$\theta=\left(\theta_{11},\theta_{10},\theta_{01},\theta_{00}\right)$
+and~$i,j=0,1$.  Subscripts match those of table~\ref{Linetaldata}; in
+computational work we
+identify~$\left(\theta_{11},\theta_{10},\theta_{01},\theta_{00}\right)$
+with {\tt p1, p2, p3, p4} respectively.
+
+If we take a Dirichlet prior for~$(\theta_{ij}),\ i=0,1, \ j=0,1$ with
+parameters~$\alpha_{ij}$, then the posterior density of~$\theta$ induced by the
+data~$D$ is
+
+\begin{equation}\Prob(\theta| D)  \propto \prod_{ij}  {\theta_{ij}}^ {(y_{ij} + \alpha_{ij}-1)}
+  \prod_i {\theta_{i+}}^ {z_{i+}} \prod_j {\theta_{+j}}^ {u_{+j}}.
+\end{equation}
+
+Then we seek~$\Prob( \theta_{+1} > \theta_{1+} | D)$, equivalently we will
+find~$\Prob(\theta_{01} > \theta_{10} | D)$.  We will do this for the special
+case of~$\alpha_{ij}= 1$ for all $i,j$, which corresponds to a uniform prior
+density for~$\theta$.
+
+We thus seek the posterior
+probability~$\Prob\left(\theta_{01}>\theta_{10}|D\right)$ given that
+
+\begin{equation}\label{distrib}
+\Prob(\theta|D) \propto\theta_{11}^{26+1-1}\theta_{10}^{1+1-1}\theta_{01}^{5+1-1}\theta_{00}^{18+1-1} (\theta_{11}
++\theta_{10})^2 (\theta_{01}+\theta_{00})^9 (\theta_{11} +\theta_{01})^4
+(\theta_{10} + \theta_{00})^4.
+\end{equation}
+
+
+The expression for~$\Prob(\theta| D)$ is a special case of the
+`hyperdirichlet' distribution~\citep{hankin2009}.  The \proglang{R}
+idiom is straightforward:
+
+<<defb,echo=FALSE,print=FALSE,cache=TRUE>>=
+b <- uniform(4)
+b[ 2] <-  19
+b[ 3] <-   6
+b[ 4] <-   9
+b[ 5] <-   2
+b[ 6] <-   4
+b[ 9] <-  27
+b[11] <-   4
+b[13] <-   2
+@ 
+ 
+<<printb>>=
+b
+@ 
+
+is the appropriate hyperdirichlet distribution.  The hyperdirichlet
+\proglang{R} package gives~$\Prob(\theta_{01} > \theta_{10} | D)
+=0.969$ (further computational details are given online
+by~\citet{altham2009}):
+
+
+\begin{Schunk}
+  \begin{Sinput}
+f3 <- function(x){x[2]>x[3]}
+probability(b,disallowed=f3,eps=1e-2)
+\end{Sinput}
+\begin{Soutput}
+  [1] 0.9686342
+\end{Soutput}
+\end{Schunk}
+
+
+Thus Reviewer~2 is more likely to give a `Yes' answer than is
+Reviewer~1.  This agrees well with the value of~0.968 given
+by~\citeauthor{lin2009} in their Table~3.
+
+Figure~\ref{prior_posterior} shows some numerical results made using the
+hyperdirichlet \proglang{R} package~\citep{hankin2009}.
+
+<<generate_data,echo=FALSE,print=FALSE,cache=TRUE>>=
+if(calculate_from_scratch){
+  number <- 10000
+  set.seed(0)
+  d <- rhyperdirichlet(n=number, b)
+  sam <- apply(d,1,function(x){x[2]/(x[2]+x[3])})
+  rb <-  rbeta(number,2,6)
+} else {
+  load("precalc.Rdata")
+}
+@
+
+
+<<sampat,echo=FALSE,print=FALSE,cache=TRUE>>=
+sampat <- apply(d,1,function(x){log(x[2]/x[3])})
+@ 
+
+
+\begin{figure}[htb]
+  \begin{center}
+<<plotPriors,fig=TRUE,echo=FALSE>>=
+
+layout(matrix(1:4,2,2,byrow=TRUE))
+hist(sam,freq=FALSE,col='gray',main='(a)',xlab=expression(psi))
+abline(v=0.5,lwd=3,col='gray')
+jj <- seq(from=0 , to=0.8 , len=100)
+points(jj ,dbeta(jj,2,6),type='l')
+
+par(pty='s')
+qqplot(d,rb,asp=1,xlim=c(0,1),ylim=c(0,1),main='(b)',xlab=expression(paste(psi,' (all data)')),ylab=expression(paste(psi,' (complete cases)')))
+abline(0,1)
+
+
+par(pty='m')
+
+jj.s <- seq_along(sam)/length(sam)
+jj.r <- seq_along(rb)/length(rb)
+  plot(sort(sam), jj.s, xlim=c(0,0.8),type='l',lty=1,main='(c)',xlab=expression(psi) , ylab='quantile')
+points(sort(rb ), jj.r, type='l',lty=2)
+legend('bottomright' , legend=c("c/cases", "all data"),lty=1:2)
+segments(x0=0.5,y0=0.4,x1=0.5,y1=1, lwd=3,col='gray')
+
+qqnorm(sampat,main='(d)',xlab='normal quantile' , ylab=expression(paste(phi, ' (empirical quantile)')))
+abline(-1.819,var(sampat))
+@
+\caption{The \label{prior_posterior} distribution
+  of~$\psi=\theta_{10}/\left(\theta_{10} + \theta_{01}\right)$ under the
+  posterior distribution induced by the complete cases [a beta distribution
+    with parameters 2, 6; the `complete cases PDF'] and the whole dataset
+  [empirically sampled using {\tt rhyperdirichlet()} with 30000 samples; the
+    `all data PDF']; $\psi>0.5$ means $\theta_{01}>\theta_{10}$ and the gray
+  lines mark~$\psi=0.5$.  (a), histogram of complete cases PDF together with
+  the analytically determined all data PDF (b), qqplot; (c) empirical CDF ;
+  (d) normal quantile plot for
+  $\phi=\log\left(\theta_{01}\left/\theta_{10}\right.\right)$ with
+  straight line corresponding to asymptotic mean and variance}
+  \end{center}
+\end{figure}
+
+\subsubsection*{Likelihood}
+
+The above techniques used a Bayesian approach in which integration was used to
+calculate the $p$-value.  Here we show how the method of
+support~\citep{edwards1992} may be used instead.  This is numerically
+advantageous because multidimensional integration is not needed.
+
+First, find the maximum likelihood estimate for the distribution:
+
+<<mlb,echo=FALSE,print=FALSE,cache=TRUE>>=
+mlb <- maximum_likelihood(b)
+@ 
+
+\begin{Schunk}
+  \begin{Sinput}
+    maximum_likelihood(b)
+  \end{Sinput}
+\end{Schunk}
+
+
+<<printmlb,echo=FALSE,print=TRUE>>=
+mlb
+@ 
+
+The maximum likelihood estimate of the four parameters given by the PDF of
+equation~\ref{distrib} is thus~$\hat{\theta}^\mathrm{f}=\left(
+\Sexpr{round(mlb$MLE[1],3)} ,
+\Sexpr{round(mlb$MLE[2],3)} ,
+\Sexpr{round(mlb$MLE[3],3)} ,
+\Sexpr{round(mlb$MLE[4],3)}
+\right)$, with a corresponding support
+of~$\mathcal{S}^\mathrm{f}=\Sexpr{round(mlb$support,2)}$ (superscript `f'
+means that the optimization proceeded {\bf f}reely over the domain).
+%$
+
+Now the maximum likelihood estimate under the restriction
+that~$\theta_{01}<\theta_{10}$ is given by
+
+<<mlbf3, echo=FALSE, print=FALSE, cache=TRUE>>=
+f3 <- function(x){x[2]<x[3]}
+mlb.f3 <- maximum_likelihood(b,disallowed=f3)
+@ 
+
+\begin{Schunk}
+  \begin{Sinput}
+    f3 <- function(x){x[2]<x[3]}
+    maximum_likelihood(b,disallowed=f3)
+  \end{Sinput}
+\end{Schunk}
+
+<<printmlb.f3,echo=FALSE,print=TRUE>>=
+mlb.f3
+@     
+    
+Thus the restricted MLE is~$\hat{\theta}^\mathrm{r}=\left(
+\Sexpr{round(mlb.f3$MLE[1],3)} ,
+\Sexpr{round(mlb.f3$MLE[2],3)} ,
+\Sexpr{round(mlb.f3$MLE[3],3)} , 
+\Sexpr{round(mlb.f3$MLE[4],3)}
+\right)$, with a corresponding support
+of~$\mathcal{S}^\mathrm{r}=\Sexpr{round(mlb.f3$support,2)}$.
+Observe that~$\hat{\theta}^\mathrm{r}_{01}=\hat{\theta}^\mathrm{r}_{10}$ as the numerical
+optimization routine finds a point on the boundary of the admissible region.
+ 
+%$
+
+The
+difference~$\mathcal{S}^\mathrm{f}-\mathcal{S}^\mathrm{r}\simeq\mbox{\Sexpr{round(mlb$support-mlb.f3$support,4)}}$,
+suggests that one may increase the support from {\em any} point
+consistent with~$\theta_{01}<\theta_{10}$ by (almost) two units of
+support by the expedient of not restricting the search to regions
+where~$\theta_{01}<\theta_{10}$.
+
+\subsection*{Conclusions}
+
+Our analysis has added to the techniques which practising statisticians may
+bring to bear on the analysis of this type of \twobytwo\ table, and we hope to
+stimulate interest in the aylmer and hyperdirichlet \proglang{R} packages.
+
+
+\bibliography{hyperdirichlet}
+\end{document}

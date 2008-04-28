@@ -54,6 +54,14 @@ rhyperdirichlet(n, HD, start=NULL, sigma=NULL)
   
 \author{Robin K. S. Hankin}
 \note{
+
+  Function \code{rhyperdirichlet()} uses a Metropolis-Hastings algorithm
+  to construct a Markov chain.  Note that successive observations are
+  not independent of one another.  The details of this nonindependence
+  are poorly understood (by me, at any rate).  The examples section
+  below shows how to generate a single random observation from the
+  hyperdirichlet distribution.
+  
   Function \code{dhyperdirichlet()} silently normalizes \code{p} by
   \code{p <- p/sum(p)}.
 
@@ -69,5 +77,13 @@ dhyperdirichlet(c(1,4,3,2)/10, dirichlet(1:4))
 rhyperdirichlet(20, dirichlet(1:3))
 
 diff(c(0,sort(runif(9)),1))  # random sample drawn from dirichlet(rep(1,10))
+
+# how to draw a single observation from the hyperdirichlet:
+f <- function(HD,n,...){rhyperdirichlet(n,HD=HD,...)[n,,drop=TRUE]}
+f(dirichlet(1:3),n=100)
+f(dirichlet(1:3),n=100)
+f(dirichlet(1:3),n=100)
+# Note, n=100 might not be enough burn-in.
+
 
 }

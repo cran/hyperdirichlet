@@ -1,0 +1,1256 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[nojss]{jss}
+\usepackage{dsfont}
+\usepackage{bbm}
+\usepackage{amsfonts}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{yfonts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% just as usual
+\author{Robin K. S. Hankin\\University of Cambridge}
+\title{A Generalization of the Dirichlet Distribution}
+%\VignetteIndexEntry{The hyperdirichlet distribution}
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Robin K. S. Hankin}
+\Plaintitle{A Generalization of the Dirichlet Distribution}
+\Shorttitle{A Generalization of the Dirichlet Distribution}
+
+%% an abstract and keywords
+\Abstract{This vignette is based on~\citet{hankin2010}.  It
+  discusses a generalization of the Dirichlet
+  distribution, the `hyperdirichlet', in which various types of
+  incomplete observations may be incorporated.  It is conjugate to the
+  multinomial distribution when some observations are censored or
+  grouped.  The \pkg{hyperdirichlet} \proglang{R} package is
+  introduced and examples given.  A number of statistical tests are
+  performed on the example datasets, which are drawn from diverse
+  disciplines including sports statistics, the sociology of climate
+  change, and psephology.
+
+  This vignette is based on a manuscript currently under review at the
+  Journal of Statistical Software.  For reasons of performance, some
+  of the more computationally expensive results are pre-loaded.  To
+  calculate them from scratch, change ``\code{calc\_from\_scratch <-
+    TRUE}'' to ``\code{calc\_from\_scratch <- FALSE}'' in chunk
+  \code{time\_saver}.
+  
+}
+
+\Keywords{Dirichlet distribution,
+  combinatorics, \proglang{R}, multinomial distribution, constrained
+optimization}
+\Plainkeywords{Dirichlet distribution,
+  combinatorics, R, multinomial distribution, constrained
+optimization}
+
+%% publication information
+%% NOTE: This needs to filled out ONLY IF THE PAPER WAS ACCEPTED.
+%% If it was not (yet) accepted, leave them commented.
+%% \Volume{13}
+%% \Issue{9}
+%% \Month{September}
+%% \Year{2004}
+%% \Submitdate{2004-09-29}
+%% \Acceptdate{2004-09-29}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Robin K. S. Hankin\\
+  Department of Land Economy; supported by The Tyndall Centre\\
+  University of Cambridge\\
+  19 Silver Street\\
+  Cambridge CB3 9EP\\
+  United Kingdom\\
+  E-mail: \email{hankin.robin@gmail.com}
+}
+%% It is also possible to add a telephone and fax number
+%% before the e-mail in the following format:
+%% Telephone: +43/1/31336-5053
+%% Fax: +43/1/31336-734
+
+%% for those who use Sweave please include the following line (with % symbols):
+%% need no \usepackage{Sweave.sty}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\bolda}{\mathbf a}
+\newcommand{\boldp}{\mathbf p}
+\newcommand{\boldV}{\mathbf V}
+\newcommand{\boldalpha}{\mbox{\boldmath$\alpha$}}
+\newcommand{\boldzero}{\mathbf 0}
+
+\newcommand{\mcf}{\mathcal F}
+\newcommand{\mcm}{\mathcal M}
+\newcommand{\mcs}{\mathcal S}
+\newcommand{\mcw}{\mathcal W}
+
+\newcommand{\pG}{p_{\mbox{\frakfamily g}}}
+
+\SweaveOpts{}
+\begin{document}
+\section{Introduction}
+
+<<set_seed_chunk,echo=FALSE,print=FALSE>>=
+set.seed(0)
+@ 
+
+<<time_saver,echo=FALSE,print=FALSE>>=
+calc_from_scratch <- FALSE
+@ 
+
+<<echo=FALSE,print=FALSE>>=
+ignore <- require(hyperdirichlet,quietly=TRUE)
+@ 
+
+The Dirichlet distribution is conjugate to the multinomial
+distribution in the following sense.  If random
+variables~$\boldp=\left(p_1,\ldots,p_k\right)$
+satisfy~$\sum_{i=1}^kp_i=1$ and are Dirichlet, that is, they have a
+prior distribution
+
+\begin{equation}\label{dirichlet_alpha}
+f(\boldp)=
+p_1^{\alpha_1-1}p_2^{\alpha_2-1}\cdots p_k^{\alpha_k-1}\cdot
+\frac{\Gamma\left(\sum_{i=1}^n\alpha_i\right)}{\prod_{i=1}^k\Gamma\left(\alpha_i\right)}
+\end{equation}
+then if the~$p_i$ are interpreted as the parameters of a multinomial
+distribution from which~$a_1,\ldots,a_k$ independent observations of
+types~$1,\ldots,k$ are made, then the posterior PDF for~$\boldp$ will
+be
+\begin{equation}\label{dirichlet_alpha_a}
+p_1^{a_1+\alpha_1-1}p_2^{a_2+\alpha_2-1}\cdots p_k^{a_k+\alpha_k-1}\cdot
+\frac{\Gamma\left(\sum_{i=1}^na_i+\alpha_i\right)}{\prod_{i=1}^n\Gamma\left(a_i+\alpha_i\right)},
+\end{equation}
+
+thus belonging to the same family as the prior, the Dirichlet.
+
+It is convenient to denote the distribution of
+Equation~\ref{dirichlet_alpha} as~$D(\boldalpha)$
+where~$\boldalpha=\left(\alpha_1,\ldots,\alpha_k\right)$ is
+the~$k$-tuple of Dirichlet parameters; thus that of
+Equation~\ref{dirichlet_alpha_a} would be~$D(\boldalpha+\bolda)$,
+where~$\bolda=\left(a_1,\ldots,a_k\right)$ is the~$k$-tuple
+of observation counts.
+
+In this paradigm, an observation is informative because it increases
+the Dirichlet parameter of its category by one.  However, an
+observation may be informative even if it does not belong
+unambiguously to a single category: Consider
+making~$r=r_{123}+r_{456}$ censored observations whose exact classes
+are not observed but~$r_{123}$ are known to be one of categories~1, 2,
+or 3, and~$r_{456}$ are known to be one of categories~4,5, or 6.  The
+posterior would satisfy
+
+\begin{equation}\label{censored}
+f\left(\boldp\right)\propto
+p_1^{\alpha_1-1}p_2^{\alpha_2-1}\cdots p_k^{\alpha_k-1}
+\cdot\left(p_1+p_2+p_3\right)^{r_{123}}
+\cdot\left(p_4+p_5+p_6\right)^{r_{456}}
+\end{equation}
+
+and is not Dirichlet.  Consider now the case where observations are
+made from a conditional multinomial.  Suppose~$s_{123}$ observations
+are made whose class is known {\em a priori} to be one of~1,2, and 3,
+and there are~$s_i$ of class~$i$ where~$i=1,2,3$, then the posterior
+would be
+
+\begin{equation}
+f(\boldp)\propto
+p_1^{\alpha_1-1}p_2^{\alpha_2-1}\cdots p_k^{\alpha_k-1}
+\cdot
+\frac{p_1^{s_1}p_2^{s_2}p_3^{s_3}}{\left(p_1+p_2+p_3\right)^{s_{123}}},
+\end{equation}
+also not Dirichlet.  These types of observation occur frequently in a
+wide range of contexts and naturally lead one to consider the
+following generalization of the Dirichlet distribution:
+
+\begin{equation}\label{HD_PDF}
+f(\boldp)\propto
+\left(\prod_{i=1}^kp_i\right)^{-1}
+\prod_{G\in\wp(K)}
+\left(\sum_{i\in G}p_i\right)^{\mcf(G)}
+\end{equation}
+
+where~$K$ is the set of positive integers not exceeding~$k$, $\wp(K)$
+is its power set, and~$\mcf$ is a function that maps~$\wp(K)$ to the
+real numbers\footnote{Here, a letter in a calligraphic font always
+  denotes a function from~$\wp(K)$ to the real numbers; it is a
+  generalization of the vector of parameters \boldalpha\ used in the
+  Dirichlet distribution; bold letters (such as~$\boldp$) always
+  denote $k$-tuples.  Taking~$\mcf$ as an example, the hyperdirichlet
+  distribution itself is denoted~$H(\mcf)$ and its PDF would
+  be~$f\left(\boldp;\mcf\right)$.}.  Here, $p_i\geqslant 0$
+for~$1\leqslant i\leqslant k$ and~$\sum_{i=1}^{k}p_i=1$.  We call this
+the \emph{hyperdirichlet distribution} and denote it by~$H(\mcf)$.
+
+The first term is there so that defining
+
+\begin{equation}
+  \mcf(G)=\left\{
+  \begin{array}{lc}
+    \alpha_i\qquad &\mbox{if\ }G ==\left\{i\right\}  \\
+    0  \qquad &\mbox{otherwise}
+  \end{array}\right.
+\end{equation}
+results in~$H(\mcf)$ being identical to~$D(\boldalpha)$. 
+
+The distribution appears to have~$\left|\wp(K)\right|=2^k$ real
+parameters but the effective number of degrees of freedom is
+actually~$2^{k}-2$: the first and last parameter correspond to the
+empty set and the complete set respectively, and so do not affect the
+PDF.
+
+\subsubsection{Normalizing constant}
+
+The normalizing factor of the PDF given in equation~\ref{HD_PDF} is
+given by
+
+\begin{equation}\label{Beqn}
+B(\mcf)=
+\int_{\boldp\geqslant\boldzero,\sum_{i=1}^{k-1}p_i\leqslant 1}
+\left(\prod_{i=1}^kp_i\right)^{-1}
+\prod_{G\in\wp(K)}
+\left(\sum_{i\in G}p_i\right)^{\mcf(G)}
+\,d\left(p_1,\ldots,p_{k-1}\right)
+\end{equation}
+
+where~$p_k=1-\sum_{i=1}^{k-1}p_i$.  This is given by
+function~\code{B()} in the package.  If the distribution is Dirichlet
+or Generalized Dirichlet, the closed form expression for the
+normalizing constant is used.  If not, numerical methods are
+used\footnote{Certain special cases of the hyperdirichlet may be
+  manipulated using multivariate polynomials so that closed-form
+  expressions for the normalization constant become
+  available~\citep[page 88]{altham2009}.  However, further work would
+  be required to translate~\citeauthor{altham2009}'s insight into
+  workable \proglang{R} idiom~\citep{hankin2008}.}.
+
+Numerical evaluation of Equation~\ref{Beqn} is computationally
+expensive, especially when~$k$ becomes large---\cite{evans2000} and
+others refer to ``the curse of dimensionality'' when discussing the
+difficulty of integrating over spaces of large dimension.
+
+The determination of p-values often requires evaluating integrals of
+this type, in addition to more computationally demanding integrals
+such as evaluated in section~\ref{p_value_calculation} on
+page~\pageref{p_value_calculation}.  The \pkg{hyperdirichlet} package
+provides functionality to calculate p-values for a wide range of
+natural hypotheses, but many such calculations are prohibitively time
+consuming.
+
+An alternative to p-values is furnished by the Method of
+Support~\citep{edwards1992}, which requires no integration for its
+calculation; examples of this are provided in
+Section~\ref{section_examples} below.  It is anticipated that
+practitioners using the package will be able to choose between
+computationally expensive p-value calculation and the much faster
+assessment provided by the Method of Support.
+
+\subsubsection{Moments}
+Moments---that is,
+$\E\left(p_1^{m_1}\cdots p_k^{m_k}\right)$---are given
+by~$B(\mcf+\mcm)/B(\mcf)$, where
+
+\begin{equation}\label{MG}
+\mcm(G)=\left\{\begin{array}{lc}
+  m_i\qquad &\mbox{if\ }G==\left\{i\right\} (1\leqslant i\leqslant k)\\
+  0  \qquad &\mbox{otherwise.}
+\end{array}\right.
+\end{equation}
+
+Updating a prior~$H\left(\mcf\right)$ in the light of observations is
+straightforward.  If an observation~$i$, drawn from a multinomial
+distribution, is made, then the posterior
+is~$H\left(\mcf+\mcs_{\{i\}}\right)$, where
+
+\begin{equation}\label{SXG}
+  \mcs_X(G)=\left\{\begin{array}{lc}
+      1  \qquad &\mbox{if\ }G==X\\
+      0  \qquad &\mbox{otherwise.}
+    \end{array}\right.
+\end{equation}
+
+If the observation is restricted {\em a priori} to be in~$G\subseteq
+K$, and subsequently specified to be amongst~$C\subseteq G$, then the
+posterior is~$H\left(\mcf+\mcs_C-\mcs_G\right)$.
+
+%If~$\boldp\sim H(\mcf)$, then using this notation,
+%$\E\left(\boldp\right)=B\left(\mcf+S_{\mathbf i}\right)/B(\mcf)$.
+
+\subsubsection{Restrictions}
+
+Not every~$\mcf$ corresponds to a normalizable~$H(\mcf)$, that is, a
+distribution with a finite integral.  A sufficient condition is that
+for all nonempty~$G\subseteq K, \sum_{H\subseteq G} \mcf(H)>0$.  For
+example, for~$k=4$,
+\begin{equation}\label{sufficient}
+  \begin{array}{rcc}
+    \alpha_1&>& 0\\
+    \alpha_2&>& 0\\
+    \alpha_3&>& 0\\
+    \alpha_4&>& 0\\
+    \alpha_1+\alpha_2+\alpha_{12}&>& 0\\
+    \alpha_1+\alpha_3+\alpha_{13}&>& 0\\
+    \alpha_1+\alpha_4+\alpha_{14}&>& 0\\
+    \alpha_2+\alpha_3+\alpha_{23}&>& 0\\
+    \alpha_2+\alpha_4+\alpha_{24}&>& 0\\
+    \alpha_3+\alpha_4+\alpha_{34}&>& 0\\
+    \alpha_1+\alpha_2+\alpha_3+\alpha_{12}+\alpha_{13}+\alpha_{23}+\alpha_{123} &>&0\\
+    \alpha_1+\alpha_2+\alpha_4+\alpha_{12}+\alpha_{14}+\alpha_{24}+\alpha_{124} &>&0\\
+    \alpha_1+\alpha_3+\alpha_4+\alpha_{13}+\alpha_{14}+\alpha_{34}+\alpha_{134} &>&0\\
+    \alpha_2+\alpha_3+\alpha_4+\alpha_{23}+\alpha_{24}+\alpha_{34}+\alpha_{234} &>&0\\
+    \end{array}
+  \end{equation}
+
+[function \code{is.proper()} in the package tests for normalizability].
+
+If~$\mcf(G)=0$ whenever~$\left|G\right|>1$ then~$H(\mcf)$ reduces to a
+Dirichlet; likewise Equation~\ref{sufficient} reduces to the standard
+Dirichlet restriction~$\alpha_i>0$ for~$1\leqslant i\leqslant k$.
+
+In this paper I discuss this natural generalization of the Dirichlet
+distribution and introduce an \proglang{R}~\citep{rcore2009} package,
+\pkg{hyperdirichlet}, that provides some numerical functionality.
+
+\subsubsection{Generalizations of the Dirichlet distribution}
+
+Previous generalizations of the Dirichlet distribution include the
+work of~\citet{bradley1952}, who considered rank analysis of
+incomplete designs.  In the case of pairs, ranking is equivalent to
+choosing a winner from two items, their likelihood function would
+correspond to
+\begin{equation}\label{bradley1952}
+\prod_{i<j}
+\frac{p_i^{n_{ij}}\,p_j^{n_{ji}}}{\left(p_i+p_j\right)^{n_{ij}+n_{ji}}}
+\end{equation}
+in current notation (here there are a total of~$n_{ij}+n_{ji}$
+Bernoulli trials beween player~$i$ and player~$j>i$ of which~$n_{ij}$
+are won by player~$i$).  This is a special case of
+Equation~\ref{HD_PDF}.
+
+Censored observations, in which the class of an object is specified to
+be one of a subset of~$\left\{1,\ldots,k\right\}$, lead naturally to a
+likelihood function that is a generalization of Dirichlet's; a survey
+is given by~\cite{paulino1991}.  \cite{paulino1995} present a
+comprehensive Bayesian methodology for censored observations and a
+simplified analysis of their sample dataset is provided {\em exempli
+  gratia} in the package, documented under \code{paulino}.
+
+A different generalization was presented by~\citet{connor1969}, who
+observed that the Dirichlet distribution was neutral\footnote{Consider
+  a random vector~$\boldV=\left(P_1,\ldots,P_k\right)$.
+  Element~$i,1\leqslant i<k$ is \emph{neutral} if~$P_i$
+  and~$P_j/\left(1-\sum_{k=1}^i P_k\right)$ are independent
+  for~$j>i$~\citep{connor1969}.  A \emph{completely neutral vector} is
+  one all of whose elements are neutral.  Note that the ordering of
+  the vector is relevant: Thus neutrality of~$\boldV$ does not imply
+  neutrality of~$\boldV'=\left(P_2,P_1,P_3,\ldots,P_k\right)$. If~$\boldV$ is
+  Dirichlet, then any permutation of~$\boldV$ is neutral.} and proved that
+\begin{equation}\label{connor_gd}
+%  \left[\prod_{i=1}^{k-1}B\left(a_i,b_i\right)\right]^{-1}\,
+f(\boldp)=
+  \prod_{i=1}^{k-1}\frac{\Gamma\left(a_i+b_i\right)}{\Gamma\left(a_i\right)\Gamma\left(b_i\right)}\cdot
+  p_k^{b_{k-1}-1}\,
+  \prod_{i=1}^{k-1}\left[p_i^{a_i-1}\left(\sum_{j=i}^k
+    p_j\right)^{b_{i-1}-\left(a_i+b_i\right)}\right]
+\end{equation}
+
+[function \code{gd()} in the package] is the most general form of a
+random variable with neutrality.  \cite{wong1998} extended this work
+and showed that the generalized Dirichlet distribution was conjugate
+to a particular type of sampling experiment.
+
+
+\section{Prior information and the hyperdirichlet distribution}
+
+The Bayesian paradigm allows one to use prior information in the form
+of a prior distribution on the parameters.  There are many types of
+prior information that are expressed in a natural way using the
+hyperdirichlet distribution and some examples are discussed here.
+
+Consider four tennis players~$P_1$ through~$P_4$.  When~$P_i$
+plays~$P_j$ with~$i\neq j$, the result is a single observation from a
+Bernoulli distribution with
+parameters~$\left(\frac{p_i}{p_i+p_j},\frac{p_j}{p_i+p_j}\right)$~\citep{zermelo1929},
+where the~$p_i$ are the unknown probabilities of victory; we
+require~$\sum p_i=1$.
+
+A Dirichlet prior would be proportional to~$\prod_{i=1}^4
+p_i^{\alpha_i-1}$ where~$\alpha_i>0$, but suppose our prior
+information is that~$P_1$ and~$P_2$ are considerably stronger
+than~$P_3$ and~$P_4$ (perhaps we know~$P_1$ and~$P_2$ to be strong
+squash players, and~$P_3$ and~$P_4$ weak badminton players---surely
+informative about the~$p_i$) but remain ignorant of~$P_1$'s strength
+relative to~$P_2$, and of~$P_3$'s strength relative to~$P_4$.
+
+Then an appropriate prior might
+be~$\propto\left(p_1+p_2\right)^{\gamma_{12}}$ where the magnitude
+of~$\gamma_{12}$ reflects the strength of our prior beliefs.
+If~$\gamma_{12}$ is large, then the probability density is small
+everywhere except near points with~$p_1+p_2=1$. 
+
+The best one could do with a standard Dirichlet prior would be to
+assign large values for~$\alpha_1$ and~$\alpha_2$ and small values
+for~$\alpha_3$ and~$\alpha_4$.  But this would have the disadvantage
+that one would have to have firm beliefs about the relative strengths
+of~$P_1$ and~$P_2$, and in particular that a match between~$P_1$
+and~$P_2$ would be a Bernoulli trial with unknown probability~$p$,
+where~$p$ is itself drawn from a beta distribution with
+parameters~$\left(\alpha_1,\alpha_2\right)$.
+Thus~$\E(p)=\alpha_1/\left(\alpha_1+\alpha_2\right)$
+and~$\VAR(p)=\alpha_1\alpha_2\left/\left((\alpha_1+\alpha_2)^2(\alpha_1+\alpha_2+1)\right)\right.$
+[ie small if $\alpha_1,\alpha_2$ are large]; and one might not have
+sufficient information to make such an assertion---compare this with a
+prior~$\propto\left(p_1+p_2\right)^{\gamma_{12}}$ in which the density
+is uniform along lines of constant~$p_1+p_2$.
+
+Situations where one has prior information that is not representable
+with a Dirichlet distribution arise frequently, especially when the
+identities of the various players are not known.  The special case
+of~$k=3$ is readily visualized because the system possesses two
+degress of freedom and the PDF may be plotted on a triangular plot.
+In the context of the sports estimation problem above, an example of
+prior information might be that a knowledgeable person observed the
+players and noted that two were very much stronger than the third; he
+in fact reported that ``the guy with a red shirt got
+hammered''~\citep{west2008a}.  But whether it was player~2 or player~3
+who wore the red shirt is not known; and no information about the
+relative strengths of the two non-red wearing players is available.
+Figure~\ref{priors} shows an example of how observations affect prior
+information in this case.
+
+<<calculatePriors,echo=FALSE,print=FALSE,cache=TRUE>>=
+g <- function(p){
+  out <- uniform(3)
+  out[2] <- p
+  out[3] <- p
+  out[5] <- p
+  out[4] <- -p
+  out[6] <- -p
+  out[7] <- -p
+  out
+}
+
+h <- function(p){
+  out <- uniform(3)
+  out[5] <- p
+  out[3] <- p
+  out[7] <- -2*p
+  out
+}
+
+plot_quality <- 233
+
+if(calc_from_scratch){
+  z.prior <- triplot(g(0.5),l=plot_quality)
+  z.posterior <- triplot(g(0.5) + mult_restricted_obs(3,1:2,c(7,3)),l=plot_quality)
+  z.prior2 <- triplot(h(0.5),l=plot_quality)
+  z.posterior2 <- triplot(h(0.5) + mult_restricted_obs(3,1:2,c(7,3)),l=plot_quality)
+} else {
+  load("vig.Rdata") 
+}
+  
+@
+
+
+<<plotPriors_openfile,echo=FALSE,print=FALSE>>=
+png("plotPriors.png",width=800,height=800)
+@ 
+
+<<plotPriors_drawfigure,echo=FALSE,print=FALSE>>=
+  layout(matrix(1:4,2,2))
+  par(xpd=NA)
+
+f <- function(jj,title, levels = -(0:10)*exp(1)){
+  par(mai=c(0,0,0,0)+0.2)
+  jj <- jj-max(jj,na.rm=TRUE)
+  image(jj, asp=sqrt(3)/2, axes=FALSE,main=title)
+  contour(jj, drawlabels=FALSE, add=TRUE, levels = levels)
+  segments(0   , 0 , 0.5 , 1 , lwd=2)
+  segments(0.5 , 1 , 1   , 0 , lwd=2)
+  segments(1   , 0 , 0   , 0 , lwd=2)
+  text(0.95,-0.05,"p1")
+  text(0.05,-0.05,"p3")
+  text(0.4, 0.97 , "p2")
+}
+
+f(pmin(z.prior,5), "(a)", levels= -c(2.5 , 3, 10))
+f(z.posterior, "(b)")
+f(pmin(z.prior2,7), "(c)")
+f(z.posterior2, "(d)")
+@ 
+
+<<plotPriors_close>>=
+null <- dev.off()
+@ 
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics{plotPriors.png}
+    \caption{Density plots for the three-way hyperdirichlet
+      distribution \label{priors} corresponding to different information
+      sets.  (a), prior
+      PDF~$\propto\left[\frac{p_1p_2p_3}{\left(p_1+p_2\right)(p_1+p_3)(p_2+p_3)}\right]^\alpha$
+      with~$\alpha=0.1$ corresponding to one player being known to be
+      weaker than the other two; see how the high-probability region
+      adheres to the edges of the triangle, thus implying that at least one
+      player is weak. (b), posterior PDF following the observation
+      that~$p_1$ beat~$p_2$ 7 times out of 10 (note the induced asymmetry
+      between~$p_1$ and~$p_2$). (c), prior
+      PDF~$\propto\left[\frac{p_1p_2}{\left(p_1+p_2\right)^2}\right]^\alpha$,
+      again with~$\alpha=0.1$, corresponding to~$p_3$ being good and one
+      (but not both) of~$p_1$ or~$p_2$ being good.  (d), posterior, again
+      following~$p_1$ beating~$p_2$ 7 times out of 10}
+  \end{center}
+\end{figure}
+
+\section{Examples}\label{section_examples}
+
+This section presents the \pkg{hyperdirichlet} package in use.
+Examples drawn from diverse disciplines are given.  
+
+\subsection{Chess}
+
+Many attributes of the hyperdirichlet distribution are evident in the
+simplest non-trivial case, that of~$k=3$.  This case is also
+facilitated by the fact that, having two degrees of freedom, the
+distribution may be readily visualized.  In addition, the
+normalization factor is easily evaluated, the integrand having arity
+two.
+
+Consider Table~\ref{chess} in which matches between three chess
+players are tabulated; this dataset has been used by~\citet{west2008}.
+
+\begin{table}
+\centering
+\begin{tabular}{|ccc|c|}\hline
+Topalov  & Anand & Karpov & total\\ \hline
+22 & 13 & -  & 35\\ 
+-  & 23 & 12 & 35\\ 
+8  &  -  & 10 & 18 \\ \hline
+30 & 36 & 22 & 88 \\ \hline
+\end{tabular}
+\caption{Results of 88 chess matches \label{chess} (dataset
+  \code{chess} in the \pkg{aylmer} package) between three
+  Grandmasters; entries show number of games won up to 2001 (draws are
+  discarded).  Topalov beats Anand 22-13; Anand beats Karpov 23-12;
+  and Karpov beats Topalov 10-8}
+\end{table}
+
+The likelihood function is 
+
+\[C
+\frac{p_1^{30}p_2^{36}p_3^{22}}{
+  \left(p_1+p_2\right)^{35}
+  \left(p_2+p_3\right)^{35}
+  \left(p_1+p_3\right)^{18}
+  }
+\]
+
+(the symbol `$C$' consistently stands for an undetermined constant),
+and this corresponds to a hyperdirichlet distribution, say~$H(\mcw)$
+
+This dataset is included in the \pkg{aylmer} package; it may be loaded
+and coerced to an S4 object of class \code{hyperdirichlet}:
+
+<<loadChess,echo=TRUE,print=FALSE>>=
+data("chess")
+(w <- as.hyperdirichlet(chess))
+@
+
+thus \proglang{R} object {\tt w} corresponds to~$H(\mcw)$.  This simple example
+shows how a matrix, each row of which corresponds to repeated
+multinomial trials (here restricted to two outcomes), may be coerced
+to a \code{hyperdirichlet} object.  Each output line of the print
+method corresponds to a subset of $\{p_1,p_2,p_3\}$; in columns 1-3,
+\code{0} means ``not included'' and \code{1} means ``included''; thus,
+for example, the second line shows that Karpov won 22 (=10+12) games
+overall; and the fourth line shows that Anand and Karpov played~35
+games.
+
+The final two columns show the parameters and the powers of
+the~$2^k=8$ subsets respectively.  Although these two columns give
+identical information, having both displayed simultaneously avoids
+much confusion in practice.
+
+<<calculateChessNC,echo=FALSE,print=FALSE,cache=TRUE>>=
+if(calc_from_scratch){
+  w <- as.hyperdirichlet(w , calculate_NC = TRUE)
+  z.chess <- triplot(w,l=plot_quality)
+}
+@ 
+
+
+<<plotChess_dostuff,echo=FALSE,print=FALSE>>=
+png("plotChess.png",width=800,height=800)
+  par(xpd=NA)
+  image(z.chess, asp=sqrt(3)/2, axes=FALSE)
+  contour(z.chess, drawlabels=FALSE, add=TRUE)
+  segments(0   , 0 , 0.5 , 1 , lwd=4)
+  segments(0.5 , 1 , 1   , 0 , lwd=4)
+  segments(1   , 0 , 0   , 0 , lwd=4)
+  text(0.95,-0.05,"Topalov")
+  text(0.05,-0.05,"Karpov")
+  text(0.4, 0.97 , "Anand")
+dev.off()
+@ 
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics{plotChess.png}
+    \caption{Support function \label{chesstriangle} for the three chess
+      players of Table~\ref{chess}.  Each player has an associated~$p$,
+      and we demand~$p_1+p_2+p_3=1$.  When player~$i$ plays player~$j\neq
+      i$, the outcome is a Bernoulli trial with
+      parameter~$p_i/\left(p_i+p_j\right)$.  Each labelled corner
+      corresponds to a canonical basis vector; the top corner, for
+      example, is point~$(0,1,0)$: Anand wins all games (this point has
+      zero likelihood as the dataset includes games in which Anand lost).
+      Note that the support is unimodal}
+  \end{center}
+\end{figure}
+
+The normalizing constant~$B$ is as yet unknown; it is unevaluated by
+default as its calculation is numerically expensive, especially
+when~$k$ becomes large.  The \proglang{R} idiom to calculate~$B$ is
+
+\begin{Schunk}
+  \begin{Sinput}
+> (w <- as.hyperdirichlet(w , calculate_NC = TRUE))
+\end{Sinput}
+\end{Schunk}
+<<printChessNC,echo=FALSE,print=TRUE>>=
+w
+@ 
+
+Thus object \code{w} now includes the normalizing constant.
+
+This allows one to test various hypotheses using the standard
+methodology.  For example,
+consider~$H_0:\boldp=\left(\frac{1}{3},\frac{1}{3},\frac{1}{3}\right)$.
+The p-value for such a test is the integrated probability density, the
+integration proceeding over regions `more extreme' (that is, regions
+with lower likelihood) than~$H_0$.  The \proglang{R} idiom would be
+\label{p_value_calculation}
+
+<<calculate_chess_test,echo=FALSE,print=FALSE,cache=TRUE>>=
+jj.qwerty <- dhyperdirichlet(rep(1/3,3), w)
+f <- function(p){dhyperdirichlet(p, w) > jj.qwerty}
+if(calc_from_scratch){
+  jj.test.ch <- probability(w,disallowed=f)
+  }
+@ 
+
+\begin{Schunk}
+  \begin{Sinput}
+> f <- function(p){dhyperdirichlet(p, w) > dhyperdirichlet(rep(1/3, 3), w)} 
+> calculate_B(w, disallowed=f) / B(w)
+\end{Sinput}
+\end{Schunk}
+<<print_chess_test,echo=FALSE,print=TRUE>>=
+jj.test.ch
+@ 
+
+
+Here, function \code{calculate_B()} integrates over the domain of the
+distribution, but excluding regions where \code{f()} returns
+\code{TRUE}.  In this case, the integration proceeds over regions of
+the simplex that are more extreme than~$H_0$, where a point is held to
+be `more extreme' if its likelihood is lower than that of~$H_0$.  The
+test has a p-value of about~\Sexpr{round(jj.test.ch,3)}, indicating
+that there is insufficient evidence to reject~$H_0$ at the~$5\%$ level
+(in practice one would use function \code{probability()} which
+achieves the same result more compactly).
+
+This functionality can be applied in a slightly different context.  If
+\code{w} is interpreted as a probability density function with
+domain~$\boldp=\left(p_1,p_2,p_3\right)$ where~$\sum p_i=1$, it is
+straightforward to use the Bayesian paradigm (taking a uniform prior
+for simplicity) to estimate the probability that~$\boldp$ lies within
+any specified region.  For example, the probability that Topalov is
+indeed a better player than Anand is merely the probability
+that~$\boldp\in\left\{\boldp|p_1\geqslant p_2\right\}$.  This is given
+by
+
+\begin{equation}
+  \frac{\displaystyle
+    \int_{\boldp\geqslant\boldzero,\,\,p_1+p_2\leqslant 1,\,\,p_1\geqslant p_2}
+    \left(\prod_{i=1}^3p_i\right)^{-1}
+    \prod_{G\in\wp(\{1,2,3\})}
+    \left(\sum_{i\in G}p_i\right)^{\mcw(G)}
+    \,d\left(p_1,p_{2}\right)
+  }{\displaystyle 
+    \int_{\boldp\geqslant\boldzero,\,\,p_1+p_2\leqslant 1}
+    \left(\prod_{i=1}^3p_i\right)^{-1}
+    \prod_{G\in\wp(\{1,2,3\})}
+    \left(\sum_{i\in G}p_i\right)^{\mcw(G)}
+    \,d\left(p_1,p_2\right)
+  }
+\end{equation}
+
+which may be evaluated with function \code{probability()}:
+
+<<cheat.TgtA,echo=FALSE,print=FALSE,cache=TRUE>>=
+T.lt.A <- function(p){p[1] < p[2]}
+if(calc_from_scratch){
+  jjT <- probability(w , disallowed = T.lt.A)
+}
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+> T.lt.A <- function(p){p[1] < p[2]}
+> probability(w , disallowed = T.lt.A)
+  \end{Sinput}
+\end{Schunk}
+<<printTgtA,echo=FALSE,print=TRUE>>=
+jjT
+@ 
+
+Note that this is {\em not} the probability that Topalov would beat
+Anand in a game.  The figure is the posterior probability that the
+Bernoulli parameter for such a game would exceed 0.5 (recall that
+uncertain probabilities are held to be random variables in the
+Bayesian paradigm).
+
+Examples are given below which illustrate inferential techniques that
+do not require the value of the normalizing constant (or indeed any
+integral) to be evaluated.
+
+\subsection{Public perception of climate change}
+
+Lay perception of climate change is a complex and interesting
+process~\citep{moser2007}; the issue of immediate practical import is
+the engagement of non-experts by the use of ``icons''\footnote{This
+  word is standard in this context.  An icon is a ``representative
+  symbol''.} that illustrate different impacts of climate change.
+
+In one study~\citep{oneill2008}, subjects are presented with a set of
+icons of climate change and asked to identify which of them they find
+most concerning.  Six icons were used: PB [polar bears, which face
+  extinction through loss of ice floe hunting grounds], NB [the
+  Norfolk Broads, which flood due to intense rainfall events], L
+[London flooding, as a result of sea level rise], THC [the
+  thermo-haline circulation, which may slow or stop as a result of
+  anthropogenic modification of the water cycle], OA [oceanic
+  acidification as a result of anthropogenic emissions of ${\mathrm
+    C}{\mathrm O}_2$], and WAIS [the West Antarctic Ice Sheet, which
+  is rapidly calving as a result of climate change].
+
+Methodological constraints dictated that each respondent could be
+presented with a maximum of four icons.  Table~\ref{saffron} (dataset
+\code{icons} in the package) shows the experimental results.
+
+\begin{table}
+\centering
+\begin{tabular}{|cccccc|c|}\hline
+\multicolumn{6}{|c|}{icon}&\\ \hline
+NB & L & PB & THC & OA & WAIS & total\\ \hline
+5	&3	&-	&4	&-	&3	&15\\
+3	&-	&5	&8	&-	&2	&18\\
+-	&4	&9	&2	&-	&1	&16\\
+1	&3	&-	&3	&4	&-	&11\\
+4	&-	&5	&6	&3	&-	&18\\
+-	&4	&3	&1	&3	&-	&11\\
+5	&1	&-	&-	&1	&2	& 9\\
+5	&-	&1	&-	&1	&1	& 8\\
+-	&9	&7	&-	&2	&0	&18\\ \hline
+23      &24     &30     &24     &14     &9      &124\\ \hline
+\end{tabular}
+\caption{Experimental results\label{saffron} from \citet{oneill2008}
+  (dataset \code{icons} in the package): Respondents' choice of `most
+  concerning' icon of those presented.  Thus the first row shows
+  results from respondents presented with icons NB, L, THC, and WAIS;
+  of the~15 respondents, 5 chose NB as the most concerning (see text
+  for a key to the acronyms).  Note the ``0'' in row~6, column~9: This
+  option was available to the~18 respondents of that row, but none of
+  them actually chose WAIS}
+\end{table}
+
+One natural hypothesis~$H_F$ is that there
+exist~$\boldp=\left(p_1,\ldots,p_6\right)$ with~$\sum p_i=1$ such that
+the probability of choosing icon~$i$ is proportional to~$p_i$; the
+subscript `$F$' indicates here and elsewhere that the~$p_i$ may be
+{\bf f}reely chosen subject to their sum.  The Aylmer
+test~\citep{west2008} shows that there is insufficient evidence to
+reject this hypothesis and we proceed on the assumption that such
+a~$\boldp$ does in fact exist: This is the object of inference.
+
+This paper follows \citet{esty1992}, who gives an example drawn from
+the field of psephology.  In his voting model, $k$ choices are
+evaluated by voters; the object of inference is the
+set~$\boldp=\left(p_1,\ldots,p_k\right)$, where~$\sum_{i=1}^kp_i=1$.
+If the voter has evaluated nominee~$j$, then nominee~$j$ is selected
+with probability~$p_j/\sum p_i$, where the summation is over all
+evaluated nominees.
+
+The maximum likelihood estimate for~$\boldp$ is obtained
+straightforwardly in the package using \code{maximum_likelihood()} function;
+numerical techniques must be used because analytical solutions are not
+generally available\footnote{Even the very simplest nontrivial cases
+  have complicated expressions for the maximum likelihood estimate:
+  three dimensional hyperdirichlet distributions such as the
+  \code{chess} dataset do possess an analytical expression for the
+  MLE, but Maple's tightest simplification for it occupies over~23
+  sides of A4.}.
+
+<<dataIcons,echo=FALSE,print=FALSE>>=
+data("icons")
+@ 
+
+<<CalculateIconStats,cache=TRUE,echo=FALSE>>=
+ic <- as.hyperdirichlet(icons)
+if(calc_from_scratch){
+  m.free <- maximum_likelihood(ic)
+}
+m.free$MLE <- round(m.free$MLE,5)
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+> data("icons")
+> ic <- as.hyperdirichlet(icons)
+> (m.free <- maximum_likelihood(ic))
+\end{Sinput}
+\end{Schunk}
+
+<<printIconStats,echo=FALSE,print=TRUE>>=
+m.free
+@ 
+
+Observe how the first element, NB---corresponding to the Norfolk
+Broads---is the largest of the six; this is consistent with the
+sociological arguments presented by~\citeauthor{oneill2008} in which
+``local'' issues dominate more distant concerns (the test took place
+in Norwich).  
+
+One natural line of enquiry is to test whether the finding that the
+point estimate of NB is the largest of the six is statistically
+significant.
+
+There seem to be a number of closely related alternative hypotheses.
+Firstly, one may consider the hypothesis~$H_F: \sum p_i=1$, and
+compare with~$H_1: \sum p_i=1, p_1\leqslant\frac{1}{6}$.  Recalling
+that the normalizing factor is difficult to calculate, it is possible
+to use the Method of Support~\citep{edwards1992}.
+
+The maximum support for~$H_1$ is given by the following \proglang{R}
+idiom; the \code{disallowed} argument to \code{maximum_likelihood()} prevents
+the optimization routine searching outside the domain of~$H_1$.
+
+<<CalculateIconStatsH1,cache=TRUE,echo=FALSE>>=
+f1 <- function(p){p[1] > 1/6}
+if(calc_from_scratch){
+  m.f1 <- maximum_likelihood(ic , disallowed=f1)
+}
+m.f1$MLE <- round(m.f1$MLE,5)
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+>  f1 <- function(p){p[1] > 1/6}
+>  (m.f1 <- maximum_likelihood(ic , disallowed=f1))
+\end{Sinput}
+\end{Schunk}
+
+<<printIconStatsH1,echo=FALSE,print=TRUE>>=
+m.f1
+@ 
+
+Observe that the MLE subject to~$H_1$ is on the boundary of
+admissibility as (to within numerical accuracy) $p_1=\frac{1}{6}$.
+The relevant statistic is thus
+
+<<H1_printer>>=
+m.free$support - m.f1$support
+@ 
+
+indicating that the support at {\em any} point admissible under~$H_1$
+may be increased by~2.6 by the expedient of allowing the optimization
+to proceed freely over the domain of~$H_F$.
+\citeauthor{edwards1992}'s criterion of~2 units of support per degree
+of freedom is thus met and~$H_1$ may be rejected.
+
+Secondly, one might consider~$H_2: \sum p_i=1,
+p_1>\max\left(p_2,\ldots,p_6\right)$; thus~$p_1$ is held  to be
+greater than all the others.
+
+<<CalculateIconStatsH2,cache=TRUE,echo=FALSE>>=
+f2 <- function(p){p[1] > max(p[-1])}
+if(calc_from_scratch){
+  m.f2 <- maximum_likelihood(ic , disallowed=f2)
+}
+m.f2$MLE <- round(m.f2$MLE,5)
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+>  f2 <- function(p){p[1] > max(p[-1])}
+>  (m.f2 <- maximum_likelihood(ic , disallowed=f2))
+\end{Sinput}
+\end{Schunk}
+
+<<printIconStatsH1,echo=FALSE,print=TRUE>>=
+m.f2
+@ 
+
+Again observe that the MLE lies on the boundary of its restricted
+hypothesis [$p_1==p_3$].  We have
+<<H2_printer>>=
+m.free$support - m.f2$support
+@ 
+
+indicating that there is insufficient evidence to reject~$H_2$: There
+are points within the region of admissibility of~$H_2$ whence one can
+gain only a small amount of support (viz.
+\Sexpr{round(m.free[["support"]] - m.f2[["support"]],4)}) by
+optimizing over the whole of~$H_F$.
+
+\subsubsection{Low frequency responses}
+
+\citeauthor{oneill2008} argues that the fifth and sixth icons are both
+considered by her respondents to be ``remote'' (cf the first, which is
+definitely local).  Thus one might consider~$H_3: \sum p_i=1,
+p_5+p_6\geqslant\frac{1}{3}$:
+
+<<CalculateIconStatsH3,cache=TRUE,echo=FALSE>>=
+f3 <- function(p){sum(p[5:6]) < 1/3}
+if(calc_from_scratch){
+  m.f3 <- maximum_likelihood(ic , start_p = c(0,0,0,0,1,1), disallowed=f3)
+}
+m.f3$MLE <- round(m.f3$MLE, 5)
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+>  f3 <- function(p){sum(p[5:6]) > 1/3}
+>  m.f3 <- maximum_likelihood(ic , disallowed=f3)
+>  m.free$support - m.f3$support
+\end{Sinput}
+\end{Schunk}
+
+<<printIconStatsH3,echo=FALSE,print=TRUE>>=
+m.free$support - m.f3$support
+@ 
+
+Thus indicating that the observed low frequencies of respondents
+choosing \code{OA} and \code{WAIS} are unlikely to be due to chance,
+consistent with \citeauthor{oneill2008}'s sociological analysis.
+
+<<CalculateIconStatsH4,cache=TRUE,echo=FALSE>>=
+f4 <- function(p){min(p[1:4])>max(p[5:6])}
+if(calc_from_scratch){
+m.f4 <- maximum_likelihood(ic , start_p = c(0,0,0,0,1,1), disallowed=f4)
+}
+m.f4$MLE <- round(m.f4$MLE,5)
+@
+
+As a final example, consider~$H_4: \sum p_i=1,
+\max\left\{p_5,p_6\right\}\geqslant\min\left\{p_1,p_2,p_3,p_4\right\}$.
+This corresponds to an assertion that the maximum of the two distant
+icons is less than any local icon.  The support for this hypothesis is
+about~\Sexpr{round(m.free$support - m.f4$support, digits=3)},
+indicating that one may reject~$H_4$.
+
+The same techniques can be applied to any dataset in which repeated
+conditional multinomial observations are made; observe that a
+numerical value for the normalizing constant is not necessary for this
+type of inference.
+
+\subsection{Team sports}
+
+\begin{table}
+\centering
+\begin{tabular}{|ccccccccc|}\hline
+$p_1$ & $p_2$ & $p_3$ & $p_4$ & $p_5$ & $p_6$ & $p_7$ & $p_8$ & $p_9$ \\ \hline
+  1&  0& NA&  1&  0&  0& NA&  1& NA\\
+ NA& NA&  1&  1&  0&  1&  0&  0& NA\\
+ NA& NA&  1&  1&  0& NA&  1&  0& NA\\
+ NA&  1&  1&  0&  0& NA&  1&  1& NA\\
+  1&  1&  1&  0&  0&  0& NA& NA& NA\\ 
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ &
+           $\vdots$ \\
+\end{tabular}
+\caption{First five results from a sports\label{volleyball} league
+  comprising five players, $p_1$ to~$p_9$; dataset \code{volleyball}
+  in the package.  On any given line, a `1' denotes that that player
+  was on the winning side, a `0' that he was on the losing side, and
+  \code{NA} that he did not take part for that game}
+\end{table}
+
+Table~\ref{volleyball} shows the result of a sports league in which up
+to~$n=9$ players compete.  A `game' is a disjoint pair of subsets
+of~$K=\left\{1,2,3,4,5,6,7,8,9\right\}$ together with an
+identification of one of these subsets as the winning side.
+
+Thus the likelihood function for the first two games would be
+
+\[
+C\cdot
+\frac{p_1 + p_4+ p_8}{p_1+p_2+p_4+p_5+p_6+p_8}\cdot
+\frac{p_3 + p_4+ p_6}{p_3+p_4+p_5+p_6+p_7+p_8},
+\]
+
+on the assumption of independence.  The dataset of results provided
+with the package corresponds to a very flat likelihood curve;
+unrealistically large datasets of this type are apparently necessary
+to reject alternative hypotheses of practical interest.  The analysis
+below is based on a synthetic dataset of~4000 games in which the
+players' strengths are proportional
+to~$\left(1,\frac{1}{2},\frac{1}{3},\cdots,\frac{1}{9}\right)$:
+\citeauthor{zipf1949}'s law (\citeyear{zipf1949}).
+
+The first step is to estimate the strengths of the players:
+
+<<loadVB,echo=FALSE,print=FALSE,cache=FALSE>>=
+data("volleyball")
+@
+
+<<cheat_Volleyball_H0,echo=FALSE,print=FALSE,cache=TRUE>>=
+if(calc_from_scratch){
+v.HF <- maximum_likelihood(vb_synthetic , start_p = 
+                 c(0.30627, 0.17491, 0.10036,
+                   0.09195, 0.07228, 0.08449,
+                   0.05898, 0.04303, 0.06773)
+                 )
+}
+@ 
+
+<<cheat_Volleyball_HA,echo=FALSE,print=FALSE,cache=TRUE>>=
+o <- function(p){all(order(p[1:4])==4:1)}
+v.HA <- maximum_likelihood(vb_synthetic, disallowed=o , start_p =
+                 c(0.14522, 0.14522, 0.14522,
+                   0.14522, 0.14523, 0.08623, 
+                   0.06744, 0.05365, 0.06657)
+                 )
+@ 
+
+\begin{Schunk}
+  \begin{Sinput}
+> data("volleyball")
+> v.HF <- maximum_likelihood(vb_synthetic))
+> v.HF$MLE
+  \end{Sinput}
+\end{Schunk}
+
+<<showVB,echo=FALSE>>=
+round(v.HF$MLE , 4)
+@ 
+
+Given that the actual strengths follow~\citeauthor{zipf1949}'s law,
+the error in the estimate is given by:
+
+<<calcVBerror,echo=FALSE,print=FALSE>>=
+zipf <- function(n){jj <- 1/seq_len(n); return(jj/sum(jj))}
+vb.error <- round(zipf(9) - v.HF$MLE , 4)
+@ 
+
+\begin{Schunk}
+  \begin{Sinput}
+> zipf(9) - v.HF$MLE
+  \end{Sinput}
+\end{Schunk}
+
+<<printVBerror,echo=FALSE,print=TRUE>>=
+vb.error
+@ 
+
+showing that the estimate is quite accurate: \cite{esty1992} points
+out that numerical means will find the maximum likelihood estimate
+easily if the data is irreducible, as here.
+
+One topic frequently of interest in this context is the ranking of the
+players.  On the basis of this point estimate, one might assert
+that~$p_1\geqslant p_2\geqslant p_3\geqslant p_4$; observe that the
+ranks of the MLE are not correct beyond the fifth, even with the large
+amount of data used.  How strong is the evidence for this ranking?
+
+\begin{Schunk}
+  \begin{Sinput}
+> o <- function(p){all(order(p[1:4])==1:4)}
+> v.HA <- maximum_likelihood(vb_synthetic, disallowed=o, start_p=1:9)
+\end{Sinput}
+\end{Schunk}
+
+(the \code{start\_p} argument specifies a non-disallowed start point
+for the optimization routine).  Then
+
+<<print_VB_HA>>=
+v.HF$support - v.HA$support
+@ 
+
+shows that there is no strong statistical evidence to support the
+assertion that the players are ranked as in the MLE: There exist
+regions of parameter space with a different ranking for which less
+than two units of support are lost.
+
+\subsubsection{Tennis}
+
+The above analysis assumed that the strength of a team is proportional
+to the sum of the strengths of the players.
+
+\begin{table}
+\centering
+\begin{tabular}{|c|c|}\hline
+match& score\\ \hline
+$\{P_1,P_2\}$ vs $\{P_3,P_4\}$ & 9-2 \\
+$\{P_1,P_3\}$ vs $\{P_2,P_4\}$ & 4-4 \\
+$\{P_1,P_4\}$ vs $\{P_2,P_3\}$ & 6-7 \\
+$\{P_1\}$ vs $\{P_3\}$ & 10-14\\
+$\{P_2\}$ vs $\{P_3\}$ & 12-14\\
+$\{P_1\}$ vs $\{P_4\}$ & 10-14\\
+$\{P_2\}$ vs $\{P_4\}$ & 11-10\\
+$\{P_3\}$ vs $\{P_4\}$ & 13-13\\
+\hline
+\end{tabular}
+\caption{
+  Results from singles (lines~4-8) and doubles (lines~1-3)
+  tennis\label{DoublesTennis} matches
+  among four players, $P_1$ to~$P_4$; dataset \code{doubles} in the
+  package.  Note how~$P_1$ and~$P_2$ dominate the other players when
+  they play together (winning~9 games out of~11) but are otherwise
+  undistinguished}
+\end{table}
+
+However, many team sports appear to include an element of team
+cohesion; \citet{carron2002} suggest that there is a `strong
+relationship' between cohesion and team success.
+
+In the current context, the simplest team is a pair.  Doubles tennis
+appears to be a particularly favourable example: ``if the two partners
+coordinate\ldots well, they force their opponents to execute
+increasingly difficult shots''~\citep{cayer2004}.  Note that
+\citeauthor{cayer2004}'s assertion is independent of the individual
+players' strengths.
+
+The hyperdirichlet distribution affords a direct way of assessing and
+quantifying such claims, using the likelihood function induced by
+teams' scorelines directly.  Consider Table~\ref{DoublesTennis}, in
+which results from repeated doubles tennis matches are shown.  The
+likelihood function is
+
+\begin{eqnarray*}
+  \lefteqn{\mathcal{L}\left(p_1,p_2,p_3,p_4\right) =}   \\
+  & &   C\cdot
+  \left(p_1+p_2\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
+  \left(p_1+p_3\right)^{4}\left(p_2+p_4\right)^{4}\,\cdot\,
+  \left(p_1+p_4\right)^{6}\left(p_2+p_3\right)^{7}\,\cdot\\
+  & & 
+  \frac{p_1^{10}p_3^{14}}{\left(p_1+p_3\right)^{24}}\cdot
+  \frac{p_2^{12}p_3^{14}}{\left(p_2+p_3\right)^{26}}\cdot
+  \frac{p_1^{10}p_4^{14}}{\left(p_1+p_4\right)^{24}}\cdot
+  \frac{p_2^{11}p_4^{10}}{\left(p_2+p_4\right)^{21}}\cdot
+  \frac{p_3^{13}p_4^{13}}{\left(p_3+p_4\right)^{26}}
+\end{eqnarray*}
+
+where~$\sum p_i=1$ is understood.
+Players~$P_1$ and~$P_2$ are known to play together frequently and one
+might expect them to win more often when they play together than by
+chance.  Indeed, each matching has a scoreline of roughly 50-50,
+except~$\{P_1,P_2\}$ vs~$\{P_3,P_4\}$, which results in a win
+for~$\{P_1,P_2\}$ 9 times out of~11.  Is this likely to have arisen if
+team cohesion is in fact absent?
+
+Consider the following likelihood function:
+
+\begin{eqnarray}
+  \lefteqn{\mathcal{L}\left(\pG; p_1,p_2,p_3,p_4\right)=}\nonumber\\
+  & &   C\cdot\left(p_1+p_2+\pG\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
+  \frac{\left(p_1+p_3\right)^{4}\left(p_2+p_4\right)^{4}}{\left(p_1+p_2+p_3+p_4\right)^{8}}\cdot\ldots
+\end{eqnarray}
+
+which formalizes the effectiveness of team cohesion in terms of a
+`ghost' player with skill~$\pG$ who accounts for the additional skill
+arising when~$P_1$ and~$P_2$ play together; the null is then
+simply~$\pG=0$.
+
+It is straightforward to apply the method of support.  Function
+\code{maximum_likelihood()} takes a \code{zero} argument that specifies which
+components of the~$p_i$ are to be constrained at zero; here we specify
+that~$\pG=0$:
+
+<<print_data_doubles,echo=FALSE,print=FALSE,cache=FALSE>>=
+data("doubles")
+@ 
+
+<<CalculateDoublesStats,cache=TRUE,echo=FALSE>>=
+if(calc_from_scratch){
+  doubles_result <- maximum_likelihood(doubles)$support - maximum_likelihood(doubles,zero=5)$support
+}
+@
+
+\begin{Schunk}
+  \begin{Sinput}
+> data("doubles")
+> maximum_likelihood(doubles)$support - maximum_likelihood(doubles,zero=5)$support
+\end{Sinput}
+\end{Schunk}
+
+<<printIconStats,echo=FALSE,print=TRUE>>=
+doubles_result
+@ 
+
+thus one may reject the hypothesis the ghost player has zero strength.
+The inference is that~$P_1$ and~$P_2$ when playing together are
+stronger than one would expect on the basis of their performance
+either in singles matches, or doubles partnering with other players:
+The scoreline provides strong objective evidence that team cohesion
+is operating.
+
+This technique may be applied to any of the datasets considered in
+this paper, and in the context of scorelines the ghost may be any
+factor whose existence is in doubt.  Negative factors (for example, a
+member of the audience whose presence adversely affects one
+competitor's performance) may be assessed by recasting the negative
+effect as a helpful ghost whose skill is added to the opposition's.
+
+\section{Conclusions}
+
+The Dirichlet distribution is conjugate to the multinomial
+distribution.  This paper presents a generalization of the Dirichlet
+distribution which is conjugate to a more general class of
+observations that arise naturally in a variety of contexts.  The
+distribution is dubbed `hyperdirichlet' as it is clearly the most
+general form of its type.
+
+The \pkg{hyperdirichlet} package of \proglang{R} routines for analysis
+of the distribution is introduced and examples of the package in use
+are given.
+
+One difficulty in using the distribution is that there does not appear
+to be a closed-form analytical expression for the normalizing
+constant; numerical methods must be used.  The normalizing constant is
+difficult to calculate numerically, especially for distributions of
+large dimension.
+
+The normalizing constant is needed for conventional statistical tests;
+but its evaluation is not necessary for the Method of Support, which
+is used to test a wide variety of plausible and interesting hypotheses
+using datasets drawn from a range of disciplines.
+
+\section*{Acknowledgement}
+I would like to acknowledge the many stimulating and helpful comments
+made by the \proglang{R}-help list while preparing this software.
+
+\bibliography{hyperdirichlet}
+\end{document}
+ 
