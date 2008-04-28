@@ -11,9 +11,9 @@ A generalization of the Dirichlet distribution
 \tabular{ll}{
 Package: \tab hyperdirichlet\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
+Version: \tab 1.1-8\cr
 Date: \tab 2008-03-26\cr
-License: \tab What license is it under?\cr
+License: \tab GPL\cr
 }
 
 This package provides a generalization of the Dirichlet distribution
