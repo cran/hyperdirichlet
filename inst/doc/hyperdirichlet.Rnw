@@ -461,9 +461,11 @@ if(calc_from_scratch){
 @
 
 
-\begin{figure}[htbp]
-  \begin{center}
-<<plotPriors,fig=TRUE,echo=FALSE>>=
+<<plotPriors_openfile,echo=FALSE,print=FALSE>>=
+png("plotPriors.png",width=800,height=800)
+@ 
+
+<<plotPriors_drawfigure,echo=FALSE,print=FALSE>>=
   layout(matrix(1:4,2,2))
   par(xpd=NA)
 
@@ -484,21 +486,31 @@ f(pmin(z.prior,5), "(a)", levels= -c(2.5 , 3, 10))
 f(z.posterior, "(b)")
 f(pmin(z.prior2,7), "(c)")
 f(z.posterior2, "(d)")
-@
-\caption{Density plots for the three-way hyperdirichlet
-  distribution \label{priors} corresponding to different information
-  sets.  (a), prior
-  PDF~$\propto\left[\frac{p_1p_2p_3}{\left(p_1+p_2\right)(p_1+p_3)(p_2+p_3)}\right]^\alpha$
-  with~$\alpha=0.1$ corresponding to one player being known to be
-  weaker than the other two; see how the high-probability region
-  adheres to the edges of the triangle, thus implying that at least one
-  player is weak. (b), posterior PDF following the observation
-  that~$p_1$ beat~$p_2$ 7 times out of 10 (note the induced asymmetry
-  between~$p_1$ and~$p_2$). (c), prior
-  PDF~$\propto\left[\frac{p_1p_2}{\left(p_1+p_2\right)^2}\right]^\alpha$,
-  again with~$\alpha=0.1$, corresponding to~$p_3$ being good and one
-  (but not both) of~$p_1$ or~$p_2$ being good.  (d), posterior, again
-  following~$p_1$ beating~$p_2$ 7 times out of 10}
+@ 
+
+<<plotPriors_close>>=
+null <- dev.off()
+@ 
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics{plotPriors.png}
+    \caption{Density plots for the three-way hyperdirichlet
+      distribution \label{priors} corresponding to different information
+      sets.  (a), prior
+      PDF~$\propto\left[\frac{p_1p_2p_3}{\left(p_1+p_2\right)(p_1+p_3)(p_2+p_3)}\right]^\alpha$
+      with~$\alpha=0.1$ corresponding to one player being known to be
+      weaker than the other two; see how the high-probability region
+      adheres to the edges of the triangle, thus implying that at least one
+      player is weak. (b), posterior PDF following the observation
+      that~$p_1$ beat~$p_2$ 7 times out of 10 (note the induced asymmetry
+      between~$p_1$ and~$p_2$). (c), prior
+      PDF~$\propto\left[\frac{p_1p_2}{\left(p_1+p_2\right)^2}\right]^\alpha$,
+      again with~$\alpha=0.1$, corresponding to~$p_3$ being good and one
+      (but not both) of~$p_1$ or~$p_2$ being good.  (d), posterior, again
+      following~$p_1$ beating~$p_2$ 7 times out of 10}
   \end{center}
 \end{figure}
 
@@ -579,9 +591,8 @@ if(calc_from_scratch){
 @ 
 
 
-\begin{figure}[htbp]
-  \begin{center}
-<<plotChess,fig=TRUE,echo=FALSE>>=
+<<plotChess_dostuff,echo=FALSE,print=FALSE>>=
+png("plotChess.png",width=800,height=800)
   par(xpd=NA)
   image(z.chess, asp=sqrt(3)/2, axes=FALSE)
   contour(z.chess, drawlabels=FALSE, add=TRUE)
@@ -591,16 +602,23 @@ if(calc_from_scratch){
   text(0.95,-0.05,"Topalov")
   text(0.05,-0.05,"Karpov")
   text(0.4, 0.97 , "Anand")
-@
-\caption{Support function \label{chesstriangle} for the three chess
-  players of Table~\ref{chess}.  Each player has an associated~$p$,
-  and we demand~$p_1+p_2+p_3=1$.  When player~$i$ plays player~$j\neq
-  i$, the outcome is a Bernoulli trial with
-  parameter~$p_i/\left(p_i+p_j\right)$.  Each labelled corner
-  corresponds to a canonical basis vector; the top corner, for
-  example, is point~$(0,1,0)$: Anand wins all games (this point has
-  zero likelihood as the dataset includes games in which Anand lost).
-  Note that the support is unimodal}
+dev.off()
+@ 
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics{plotChess.png}
+    \caption{Support function \label{chesstriangle} for the three chess
+      players of Table~\ref{chess}.  Each player has an associated~$p$,
+      and we demand~$p_1+p_2+p_3=1$.  When player~$i$ plays player~$j\neq
+      i$, the outcome is a Bernoulli trial with
+      parameter~$p_i/\left(p_i+p_j\right)$.  Each labelled corner
+      corresponds to a canonical basis vector; the top corner, for
+      example, is point~$(0,1,0)$: Anand wins all games (this point has
+      zero likelihood as the dataset includes games in which Anand lost).
+      Note that the support is unimodal}
   \end{center}
 \end{figure}
 
