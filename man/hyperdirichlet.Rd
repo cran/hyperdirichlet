@@ -38,7 +38,7 @@ as.hyperdirichlet(x, calculate_NC = FALSE , ...)
   \item{calculate_NC}{Boolean, with default \code{FALSE} meaning not to
     calculate the normalizing constant and \code{TRUE} meaning to
     calculate it}
-  \item{...}{Further arguments passed to \code{adapt()}}
+  \item{...}{Further arguments passed to \code{adaptIntegrate()}}
 }
 \details{
   

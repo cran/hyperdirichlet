@@ -36,15 +36,16 @@ validated(x)
     \code{disallowed(p)} evaluating to \code{FALSE}}
   \item{give}{Boolean, with default \code{FALSE} meaning to return the
     value of the integral and \code{TRUE} meaning to return the full
-    output of \code{adapt()}}
-  \item{\dots}{Further arguments passed to \code{adapt()}}
+    output of \code{adaptIntegrate()}}
+  \item{\dots}{Further arguments passed to \code{adaptIntegrate()}}
 }
 \details{
   \itemize{
     \item Function \code{B()} is the user-friendly version.  It accesses
     the \code{NC} slot.  If not \code{NA}, the value is returned; if
-    \code{NA}, the normalizing constant is calculated using the
-    \code{adapt()} package, via \code{calculate_B()}.
+    \code{NA}, the normalizing constant is calculated using
+    \code{adaptIntegrate()} of the \code{cubature()} package, via
+    \code{calculate_B()}.
     
     \item Function \code{NC()} is not intended for the user.  It is used
     internally as an accessor method for the \code{NC} slot, and this
@@ -70,7 +71,7 @@ validated(x)
     hyperdirichlet distribution.  This is computationally slow (consider
     \code{maximum_likelihood()} for a measure of central tendency).  The
     function takes a \code{normalize} argument, not passed to
-    \code{adapt()}: this is Boolean with \code{FALSE} meaning to return
+    \code{adaptIntegrate()}: this is Boolean with \code{FALSE} meaning to return
     the value found by integration directly, and default \code{TRUE}
     meaning to normalize so the sum is exactly 1
 
@@ -112,16 +113,8 @@ validated(x)
 
 \note{
 
- The adapt package is no longer available on CRAN: so the \code{adapt()}
-function is not available either. 
-
-You may be able to install the adapt package notwithstanding its
-availability on CRAN or is license.  If you are happy with this (I am),
-install the adapt package and everything should work.
-
-I am working on providing a replacement for adapt(), but this is low on
-my list of priorities.  Sorry about this.
-
+The adapt package is no longer available on CRAN; from 1.4-3, the
+package uses \code{adaptIntegrate} of the cubature package.
 }
 
 \seealso{\code{\link{hyperdirichlet}}}

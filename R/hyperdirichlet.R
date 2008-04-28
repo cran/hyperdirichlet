@@ -349,23 +349,6 @@ setReplaceMethod("[", signature(x="hyperdirichlet"),
                  )
                  
 "calculate_B" <- function(x, disallowed=NULL, give=FALSE, ...){
-
-  if(!exists("adapt")){
-    adapt <- function(...){stop("not the original adapt")}
-    stop("the adapt package is no longer available on CRAN: so
-          the adapt() function, which is needed for calculate_B(),
-          is not available either.
-
-  You may be able to install the adapt package notwithstanding its
-  availability on CRAN or is license.  If you are happy with this (I
-  am), everything should work.
-
-I am working on providing a replacement for adapt(), but this  is
-low on my list of priorities.  Sorry about this.")
-
-  }      
-
-  
   if(!is.hyperdirichlet(x)){
     x <- as.hyperdirichlet(x, calculate_NC=FALSE)
   }
@@ -389,11 +372,11 @@ low on my list of priorities.  Sorry about this.")
              )
     }
   }
-  out <- adapt(n,lower=rep(0,n),upper=rep(1,n),functn=f, ...)
+  out <- adaptIntegrate(f,lowerLimit=rep(0,n),upperLimit=rep(1,n), ...)
   if(give){
     return(out)
   } else {
-    return(out$value)
+    return(out$integral)
   }
 }
 
