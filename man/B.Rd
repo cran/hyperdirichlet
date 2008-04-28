@@ -109,16 +109,32 @@ validated(x)
   Function \code{probability()} returns a scalar, a probability.
 }
 \author{Robin K. S. Hankin}
+
+\note{
+
+ The adapt package is no longer available on CRAN: so the \code{adapt()}
+function is not available either. 
+
+You may be able to install the adapt package notwithstanding its
+availability on CRAN or is license.  If you are happy with this (I am),
+install the adapt package and everything should work.
+
+I am working on providing a replacement for adapt(), but this is low on
+my list of priorities.  Sorry about this.
+
+}
+
 \seealso{\code{\link{hyperdirichlet}}}
 \examples{
 
 a <- hyperdirichlet(c(4,3,6,5,4,3,2,1))
+\dontrun{
 B(a)                                    # Not recommended
 a <- as.hyperdirichlet(a,TRUE)          # Recommended
 
 is.proper(a)
 
 mgf(a,powers=1:3)    # expectation of p1^1 * p2^2 * p3^3
-
+}
 
 }

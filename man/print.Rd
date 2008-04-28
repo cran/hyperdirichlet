@@ -1,6 +1,5 @@
 \name{print}
 \alias{print.hyperdirichlet}
-\alias{print.hyperdirichlet}
 \alias{dim}
 \alias{show}
 \alias{dim,hyperdirichlet-method}

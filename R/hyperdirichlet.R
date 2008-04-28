@@ -166,6 +166,9 @@ setGeneric("as.hyperdirichlet",
 
 ".as_hyperdirichlet" <- function(x, calculate_NC, validated=FALSE,  ...){
   if(is.hyperdirichlet(x)){
+    if(!is.na(NC(x))){
+      return(x)
+    }
     pn <- pnames(x)
   } else {
     pn <- NULL
@@ -346,6 +349,23 @@ setReplaceMethod("[", signature(x="hyperdirichlet"),
                  )
                  
 "calculate_B" <- function(x, disallowed=NULL, give=FALSE, ...){
+
+  if(!exists("adapt")){
+    adapt <- function(...){stop("not the original adapt")}
+    stop("the adapt package is no longer available on CRAN: so
+          the adapt() function, which is needed for calculate_B(),
+          is not available either.
+
+  You may be able to install the adapt package notwithstanding its
+  availability on CRAN or is license.  If you are happy with this (I
+  am), everything should work.
+
+I am working on providing a replacement for adapt(), but this  is
+low on my list of priorities.  Sorry about this.")
+
+  }      
+
+  
   if(!is.hyperdirichlet(x)){
     x <- as.hyperdirichlet(x, calculate_NC=FALSE)
   }
@@ -353,7 +373,7 @@ setReplaceMethod("[", signature(x="hyperdirichlet"),
 
   ## First, special dispensation for the Dirichlet:
   if(is.null(disallowed) & is.dirichlet(x)){
-    return(.diri_norm(params(x)[.pow2(dim(x))]))
+    return(diri_norm(params(x)[.pow2(dim(x))]))
   }
   
   if(is.null(disallowed)){
@@ -428,7 +448,8 @@ function(e, HD, include.Jacobian=TRUE){
 "dhyperdirichlet" <-
 function(p, HD, include.NC = FALSE, TINY = 1e-10, log=FALSE){
   if(is.matrix(p)){
-    return(apply(p,1,match.fun(sys.call()[[1]])))
+    return(apply(p,1, match.fun(sys.call()[[1]]),
+                 HD=HD, include.NC=include.NC, TINY=TINY, log=log))
   }
   
   HD <- as.hyperdirichlet(HD, validated=TRUE)
@@ -486,19 +507,19 @@ function(params, powers, pnames){
   lx <- length(x)
   out <- rep(0,2^lx)
   out[.pow2(lx)] <- rev(x)
-  return(hyperdirichlet(out, NC=.diri_norm(x),validated=TRUE, pnames=pnamesx))
+  return(hyperdirichlet(out, NC=diri_norm(x),validated=TRUE, pnames=pnamesx))
 }
 
 ".pow2" <- function(n){
   1+2^(0:(n-1))
 }
 
-".diri_norm" <- function(x){
+"diri_norm" <- function(x){
   ##  prod(gamma(x))/gamma(sum(x))
   exp(sum(lgamma(x))-lgamma(sum(x)))
 }
 
-".gd_norm" <- function(a,b){
+"gd_norm" <- function(a,b){
   ## prod(beta(a,b))
   exp(sum(lbeta(a,b)))
 }
@@ -631,7 +652,7 @@ function(a, b, b0=0, pnames=NULL){
 
   }
   out[2^k] <- b0 - (a[1]+b[1])
-  return(hyperdirichlet(out, .gd_norm(a,b), validated=TRUE,pnames=pnames))
+  return(hyperdirichlet(out, gd_norm(a,b), validated=TRUE,pnames=pnames))
 }
 
 "is.proper" <-
@@ -961,3 +982,57 @@ function (n, HD, start=NULL, sigma=NULL) {
   
   return(b)
 }
+
+"maxmult" <- function(M, start_a=NULL, give=FALSE, method="nlm", ...){
+
+  jj <- apply(M,1,sum)
+  stopifnot(max(jj)==min(jj))
+
+  
+  if(is.null(start_a)){
+    k <- ncol(M)
+    n <- mean(jj)
+    phat <- (colSums(M)/sum(M))[-k] # sum(phat) != 1
+    Sigma_m <- -n*outer(phat,phat)
+    diag(Sigma_m) <- n*phat*(1-phat) # equation 17
+    Sigma_m <- Sigma_m
+    Sigma_cm <- cov(M[,-k])
+    C_hat <- (det(Sigma_cm)/det(Sigma_m))^(1/(k-1))  # equation 25
+
+    start_a <- colMeans(M) * (n-C_hat)/(n*(C_hat-1))
+    names(start_a) <- colnames(M)
+  }
+  
+  func <- function(x,l){ # notation "l" from Mosimann 1962
+    ifelse(any(l<0),Inf,
+           lfactorial(sum(x)) -sum(lfactorial(x))
+              +lgamma(sum(l)) +sum(lgamma  (x+l))
+              -sum(lgamma(l)) -lgamma(sum  (x+l))
+           )
+  }
+  
+  f <- function(l){ -sum(apply(M, 1, FUN=func,l=l))}
+  
+  switch(method,
+         "nlm" = {
+           jj <- nlm(f, start_a, ...)
+           if(!give){ # awkard test used for consistency with 'give' in mle()
+             out <- jj$estimate
+             names(out) <- colnames(M)
+             return(out)
+           }
+         },
+         "optim" = {
+           jj <- optim(start_a, f, ...)
+           if(!give){
+             out <- jj$par
+             return(out)
+           }
+         },
+         { return(start_a)
+         }
+         )  
+  return(jj)  # at this point 'give' *must* be TRUE
+}
+
+  

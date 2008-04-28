@@ -37,7 +37,9 @@ arguments, defaulting to \code{FALSE}, that may be set if desired.
 a <- uniform(4)
 a[5] <- 1.2
 
+\dontrun{
 a <- as.hyperdirichlet(a, TRUE)  # recommended way to calculate NC
+}
 
 }
 \keyword{math}

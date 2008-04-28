@@ -64,13 +64,17 @@ as.hyperdirichlet(x, calculate_NC = FALSE , ...)
 
 (a <- uniform(3))
 a[c(TRUE,TRUE,FALSE)] <- 0.3
+\dontrun{
 (a <- as.hyperdirichlet(a, calculate_NC = TRUE))  # recommended way to calculate NC
+}
 
 (b <- dirichlet(1:3))
 as.hyperdirichlet(b)          # "forgets" the normalizing constant
+
+\dontrun{
 as.hyperdirichlet(b, TRUE)    # recalculates NC; accuracy tolerable
                               # (analytic answer = 1/60)
-
+}
 
 \dontrun{  # takes a long time
 op <- options()
