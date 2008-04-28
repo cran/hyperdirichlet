@@ -890,30 +890,30 @@ function (n, HD, start=NULL, sigma=NULL) {
     
     out[1, ] <- start
     for (i in 2:n) {
-      proposed <- -1
-      while(any(proposed<0)){
-        proposed <- drop(out[i - 1, ] + rmvnorm(n = 1, sigma = sigma*diag(nrow=d)))
-        proposed <- proposed/sum(proposed)
-      }
+      ## following lines suggested by Simon Byrne via gmail, 30 Oct 2012
+      z <- rmvnorm(n = 1, sigma = sigma * diag(nrow = d))
+      z <- z - mean(z)
+      proposed <- out[i - 1, ] + z
+      if(all(proposed>0)){
         num <- dhyperdirichlet(proposed  , HD=HD , log=FALSE)
         den <- dhyperdirichlet(out[i-1,] , HD=HD , log=FALSE)
         if ((num == 0) & (den == 0)) {
-            print("this cannot happen")
-            alpha <- 0
-        }
-        else {
-           alpha <- min(1, num/den)
+          print("this cannot happen")
+          alpha <- 0
+        } else {
+          alpha <- min(1, num/den)
         }
         if (runif(1) < alpha) {
-            out[i, ] <- proposed
+          out[i, ] <- proposed
+        } else {
+          out[i, ] <- out[i - 1, ]
         }
-        else {
-            out[i, ] <- out[i - 1, ]
-        }
+      } else {
+        out[i, ] <- out[i - 1, ]
+      }
     }
     return(out)
-}
-
+  }
 "probability" <- function(x , disallowed, ...){
   return(calculate_B(x , disallowed=disallowed , give=FALSE, ...) / B(x, ...))
 }

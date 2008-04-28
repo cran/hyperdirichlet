@@ -63,7 +63,8 @@ rhyperdirichlet(n, HD, start=NULL, sigma=NULL)
   hyperdirichlet distribution.
   
   Function \code{dhyperdirichlet()} silently normalizes \code{p} by
-  \code{p <- p/sum(p)}.
+  \code{p <- p/sum(p)}.  Currently, no check for the elements being
+  positive is made (negative elements are nullified by \code{TINY}).
 
   The relationship between \eqn{e} and \eqn{p} is given in
   \code{e_to_p.Rd}. 

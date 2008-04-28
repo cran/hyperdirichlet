@@ -84,6 +84,10 @@ f <- function(p){p[1]>p[2]}
 probability(x,f) # should be 0.5: distribution is symmetric
 }
 
+d <- dirichlet(1:3)
+colMeans(rhyperdirichlet(1e3,d))  # should be (1:3)/6; implementation includes a bugfix sent by Simon Byrne
+
+
 }
 
 

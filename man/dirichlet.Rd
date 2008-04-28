@@ -44,11 +44,11 @@ gd(a, b, b0 = 0, pnames = NULL)
   Function \code{dirichlet_params()} returns the Dirichlet parameters of
   a hyperdirichlet object.
   
-  Function \code{gd()} returns the hyperdicichlet distribution
+  Function \code{gd()} returns the hyperdirichlet distribution
   corresponding to the generalized Dirichlet distribution of Connor and
   Mosimann.
 
-  For convenience,  the generalized Dirchlet distribution described
+  For convenience,  the generalized Dirichlet distribution is described
   here.  Connor and Mosimann 1969 give the \acronym{PDF} as
   \deqn{
     \left[\prod_{i=1}^{k-1}B\left(a_i,b_i\right)\right]^{-1}\,
