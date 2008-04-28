@@ -1,4 +1,4 @@
-\name{Extract.brob}
+\name{Extract.hyperdirichlet}
 \alias{[.hyperdirichlet}
 \alias{[<-.hyperdirichlet}
 \alias{[,hyperdirichlet-method}

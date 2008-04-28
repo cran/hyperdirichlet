@@ -50,6 +50,12 @@ probabilities are poorly identified.
 \source{
  Volleyball games at \acronym{NOCS}, 2006-2008
 }
+\references{
+  Robin K. S. Hankin (2010).
+  \dQuote{A Generalization of the Dirichlet Distribution},
+  \emph{Journal of Statistical Software}, 33(11), 1-18,
+  \url{http://www.jstatsoft.org/v33/i11/}
+}
 \examples{
 data(volleyball)
 maximum_likelihood(vb , start_p = c(0.407, 0.091, 0.432, 1.73e-05,

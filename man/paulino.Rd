@@ -1,3 +1,4 @@
+\encoding{UTF-8}
 \name{paulino}
 \alias{paulino}
 \alias{Paulino}
@@ -5,15 +6,14 @@
 \title{Dataset used by Paulino}
 \description{
 A hyperdirichlet distribution for the dataset considered by Paulino and
-de Braganca Pereira (1995).
+de \enc{Bragança}{Braganca} Pereira (1995).
 }
 \usage{data(paulino)}
 
 \details{
-  
-  Paulino and de Braganca Pereiria considered 97 subjects who each were
-  one of three risk types: \dQuote{low}, \dQuote{medium}, and
-  \dQuote{high} (or 1, 2, 3)
+  Paulino and de \enc{Bragança}{Braganca} Pereiria considered 97
+  subjects who each were one of three risk types: \dQuote{low},
+  \dQuote{medium}, and \dQuote{high} (or 1, 2, 3).
 
   Of the 97 subjects, 51 were fully categorized: 14 were type 1, 17 type
   2, and 20 type 3; the remaining 46 were partly categorized: 28 were of
@@ -29,17 +29,19 @@ de Braganca Pereira (1995).
   and object \code{paulino} gives the \acronym{PDF}.
 
 \strong{Note} the object gives the \emph{likelihood}, not the posterior
-\acronym{PDF}.  Paulino and de Branganca Pereira use prior information
-of a type not readily representable in the hyperdirichlet paradigm.
+\acronym{PDF}.  Paulino and de \enc{Bragança}{Braganca} Pereira use
+prior information of a type not readily representable in the
+hyperdirichlet paradigm.
+
+% The second author's name would be 'de Bragan\c{c}a Pererira' in LaTeX.
+% It *might* be possible to use latin1 encoding but including c-cedilla
+% in latin1 appears to be inimical to emacs.
+
 }
 \source{
-C. D. M. Paulino and C. A. de Braganca Pereira 1995. \emph{Bayesian
-  Methods for Categorical Data Under Informative General Censoring},
-Biometrika, volume 82, number 2, pages 439-446
-
-%There does not seem to be a way to include the cedilla in the second
-%author's name, which would be 'de Bragan\c{c}a Pereira' in LaTeX.
-
+  C. D. M. Paulino and C. A. de \enc{Bragança}{Braganca} Pereira 1995.
+  \emph{Bayesian Methods for Categorical Data Under Informative General
+  Censoring}, Biometrika, volume 82, number 2, pages 439-446
 }
 \examples{
 data(paulino)

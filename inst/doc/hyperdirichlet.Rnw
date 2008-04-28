@@ -5,6 +5,7 @@
 \usepackage{amsfonts}
 \usepackage{wasysym}
 \usepackage{amssymb}
+\usepackage{yfonts}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -22,7 +23,8 @@
 \Shorttitle{A Generalization of the Dirichlet Distribution}
 
 %% an abstract and keywords
-\Abstract{This vignette discusses a generalization of the Dirichlet
+\Abstract{This vignette is based on~\citet{hankin2010}.  It
+  discusses a generalization of the Dirichlet
   distribution, the `hyperdirichlet', in which various types of
   incomplete observations may be incorporated.  It is conjugate to the
   multinomial distribution when some observations are censored or
@@ -62,7 +64,7 @@ optimization}
 %% in the following format:
 \Address{
   Robin K. S. Hankin\\
-  Department of Land Economy\\
+  Department of Land Economy; supported by The Tyndall Centre\\
   University of Cambridge\\
   19 Silver Street\\
   Cambridge CB3 9EP\\
@@ -80,10 +82,6 @@ optimization}
 %% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand{\bolda}{\mathbf a}
-\newcommand{\boldf}{\mathbf f}
-\newcommand{\boldm}{\mathbf m}
-\newcommand{\boldi}{\mathbf i}
-\newcommand{\boldd}{\mathbf d}
 \newcommand{\boldp}{\mathbf p}
 \newcommand{\boldV}{\mathbf V}
 \newcommand{\boldalpha}{\mbox{\boldmath$\alpha$}}
@@ -92,8 +90,9 @@ optimization}
 \newcommand{\mcf}{\mathcal F}
 \newcommand{\mcm}{\mathcal M}
 \newcommand{\mcs}{\mathcal S}
-\newcommand{\mct}{\mathcal T}
 \newcommand{\mcw}{\mathcal W}
+
+\newcommand{\pG}{p_{\mbox{\frakfamily g}}}
 
 \SweaveOpts{}
 \begin{document}
@@ -138,7 +137,7 @@ Equation~\ref{dirichlet_alpha} as~$D(\boldalpha)$
 where~$\boldalpha=\left(\alpha_1,\ldots,\alpha_k\right)$ is
 the~$k$-tuple of Dirichlet parameters; thus that of
 Equation~\ref{dirichlet_alpha_a} would be~$D(\boldalpha+\bolda)$,
-where~$\bolda=\left(\alpha_1,\ldots,\alpha_k\right)$ is the~$k$-tuple
+where~$\bolda=\left(a_1,\ldots,a_k\right)$ is the~$k$-tuple
 of observation counts.
 
 In this paradigm, an observation is informative because it increases
@@ -203,12 +202,13 @@ The first term is there so that defining
 \end{equation}
 results in~$H(\mcf)$ being identical to~$D(\boldalpha)$. 
 
-The distribution appears to have~$\left|\wp(K)\right|=2^k$
-real parameters but the effective number of degrees of freedom is
-actually~$2^{k}-2$, as the first and last parameter do not affect the
+The distribution appears to have~$\left|\wp(K)\right|=2^k$ real
+parameters but the effective number of degrees of freedom is
+actually~$2^{k}-2$: the first and last parameter correspond to the
+empty set and the complete set respectively, and so do not affect the
 PDF.
 
-\subsubsection{Normalizing constant and moments}
+\subsubsection{Normalizing constant}
 
 The normalizing factor of the PDF given in equation~\ref{HD_PDF} is
 given by
@@ -233,6 +233,28 @@ used\footnote{Certain special cases of the hyperdirichlet may be
   be required to translate~\citeauthor{altham2009}'s insight into
   workable \proglang{R} idiom~\citep{hankin2008}.}.
 
+Numerical evaluation of Equation~\ref{Beqn} is computationally
+expensive, especially when~$k$ becomes large---\cite{evans2000} and
+others refer to ``the curse of dimensionality'' when discussing the
+difficulty of integrating over spaces of large dimension.
+
+The determination of p-values often requires evaluating integrals of
+this type, in addition to more computationally demanding integrals
+such as evaluated in section~\ref{p_value_calculation} on
+page~\pageref{p_value_calculation}.  The \pkg{hyperdirichlet} package
+provides functionality to calculate p-values for a wide range of
+natural hypotheses, but many such calculations are prohibitively time
+consuming.
+
+An alternative to p-values is furnished by the Method of
+Support~\citep{edwards1992}, which requires no integration for its
+calculation; examples of this are provided in
+Section~\ref{section_examples} below.  It is anticipated that
+practitioners using the package will be able to choose between
+computationally expensive p-value calculation and the much faster
+assessment provided by the Method of Support.
+
+\subsubsection{Moments}
 Moments---that is,
 $\E\left(p_1^{m_1}\cdots p_k^{m_k}\right)$---are given
 by~$B(\mcf+\mcm)/B(\mcf)$, where
@@ -257,8 +279,8 @@ is~$H\left(\mcf+\mcs_{\{i\}}\right)$, where
 \end{equation}
 
 If the observation is restricted {\em a priori} to be in~$G\subseteq
-K$, and subsequently specified to be amongst~$H\subseteq G$, then the
-posterior is~$H\left(\mcf+\mcs_H-\mcs_G\right)$.
+K$, and subsequently specified to be amongst~$C\subseteq G$, then the
+posterior is~$H\left(\mcf+\mcs_C-\mcs_G\right)$.
 
 %If~$\boldp\sim H(\mcf)$, then using this notation,
 %$\E\left(\boldp\right)=B\left(\mcf+S_{\mathbf i}\right)/B(\mcf)$.
@@ -295,7 +317,7 @@ Dirichlet; likewise Equation~\ref{sufficient} reduces to the standard
 Dirichlet restriction~$\alpha_i>0$ for~$1\leqslant i\leqslant k$.
 
 In this paper I discuss this natural generalization of the Dirichlet
-distribution and introduce an \proglang{R}~\citep{rcore2008} package,
+distribution and introduce an \proglang{R}~\citep{rcore2009} package,
 \pkg{hyperdirichlet}, that provides some numerical functionality.
 
 \subsubsection{Generalizations of the Dirichlet distribution}
@@ -480,7 +502,7 @@ f(z.posterior2, "(d)")
   \end{center}
 \end{figure}
 
-\section{Examples}
+\section{Examples}\label{section_examples}
 
 This section presents the \pkg{hyperdirichlet} package in use.
 Examples drawn from diverse disciplines are given.  
@@ -584,12 +606,7 @@ if(calc_from_scratch){
 
 The normalizing constant~$B$ is as yet unknown; it is unevaluated by
 default as its calculation is numerically expensive, especially
-when~$k$ becomes large---\cite{evans2000} and others refer to ``the
-curse of dimensionality'' when discussing the difficulty of
-integrating over spaces of large dimension.  This consideration
-motivates much of the design of the \pkg{hyperdirichlet} package.
-
-The \proglang{R} idiom to calculate~$B$ is
+when~$k$ becomes large.  The \proglang{R} idiom to calculate~$B$ is
 
 \begin{Schunk}
   \begin{Sinput}
@@ -608,7 +625,7 @@ consider~$H_0:\boldp=\left(\frac{1}{3},\frac{1}{3},\frac{1}{3}\right)$.
 The p-value for such a test is the integrated probability density, the
 integration proceeding over regions `more extreme' (that is, regions
 with lower likelihood) than~$H_0$.  The \proglang{R} idiom would be
-
+\label{p_value_calculation}
 
 <<calculate_chess_test,echo=FALSE,print=FALSE,cache=TRUE>>=
 jj.qwerty <- dhyperdirichlet(rep(1/3,3), w)
@@ -745,8 +762,8 @@ NB & L & PB & THC & OA & WAIS & total\\ \hline
 \end{table}
 
 One natural hypothesis~$H_F$ is that there
-exist~$\boldp=p_1,\ldots,p_6$ with~$\sum p_i=1$ such that the
-probability of choosing icon~$i$ is proportional to~$p_i$; the
+exist~$\boldp=\left(p_1,\ldots,p_6\right)$ with~$\sum p_i=1$ such that
+the probability of choosing icon~$i$ is proportional to~$p_i$; the
 subscript `$F$' indicates here and elsewhere that the~$p_i$ may be
 {\bf f}reely chosen subject to their sum.  The Aylmer
 test~\citep{west2008} shows that there is insufficient evidence to
@@ -755,10 +772,11 @@ a~$\boldp$ does in fact exist: This is the object of inference.
 
 This paper follows \citet{esty1992}, who gives an example drawn from
 the field of psephology.  In his voting model, $k$ choices are
-evaluated by voters; the object of inference is the set~$p_i$,
-where~$\sum_{i=1}^kp_i=1$.  If the voter has evaluated nominee~$j$,
-then nominee~$j$ is selected with probability~$p_j/\sum p_k$, where
-the summation is over all evaluated nominees.
+evaluated by voters; the object of inference is the
+set~$\boldp=\left(p_1,\ldots,p_k\right)$, where~$\sum_{i=1}^kp_i=1$.
+If the voter has evaluated nominee~$j$, then nominee~$j$ is selected
+with probability~$p_j/\sum p_i$, where the summation is over all
+evaluated nominees.
 
 The maximum likelihood estimate for~$\boldp$ is obtained
 straightforwardly in the package using \code{maximum_likelihood()} function;
@@ -1038,12 +1056,15 @@ vb.error <- round(zipf(9) - v.HF$MLE , 4)
 vb.error
 @ 
 
-showing that the estimate is quite accurate.  One topic frequently of
-interest in this context is the ranking of the players.  On the basis
-of this point estimate, one might assert that~$p_1\geqslant
-p_2\geqslant p_3\geqslant p_4$; observe that the ranks of the MLE are
-not correct beyond the fifth, even with the large amount of data used.
-How strong is the evidence for this ranking?
+showing that the estimate is quite accurate: \cite{esty1992} points
+out that numerical means will find the maximum likelihood estimate
+easily if the data is irreducible, as here.
+
+One topic frequently of interest in this context is the ranking of the
+players.  On the basis of this point estimate, one might assert
+that~$p_1\geqslant p_2\geqslant p_3\geqslant p_4$; observe that the
+ranks of the MLE are not correct beyond the fifth, even with the large
+amount of data used.  How strong is the evidence for this ranking?
 
 \begin{Schunk}
   \begin{Sinput}
@@ -1111,17 +1132,19 @@ likelihood function is
 
 \begin{eqnarray*}
   \lefteqn{\mathcal{L}\left(p_1,p_2,p_3,p_4\right) =}   \\
-  & &   C\cdot\left(p_1+p_2\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
+  & &   C\cdot
+  \left(p_1+p_2\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
   \left(p_1+p_3\right)^{4}\left(p_2+p_4\right)^{4}\,\cdot\,
-  \left(p_2+p_3\right)^{6}\left(p_1+p_4\right)^{7}\,\cdot\\
+  \left(p_1+p_4\right)^{6}\left(p_2+p_3\right)^{7}\,\cdot\\
   & & 
-    \frac{p_1^{10}p_2^{14}}{\left(p_1+p_2\right)^{24}}\cdot
-  \frac{p_2^{12}p_3^{14}}{\left(p_2+p_3\right)^{24}}\cdot
+  \frac{p_1^{10}p_3^{14}}{\left(p_1+p_3\right)^{24}}\cdot
+  \frac{p_2^{12}p_3^{14}}{\left(p_2+p_3\right)^{26}}\cdot
   \frac{p_1^{10}p_4^{14}}{\left(p_1+p_4\right)^{24}}\cdot
-  \frac{p_2^{11}p_4^{10}}{\left(p_2+p_4\right)^{22}}\cdot
-  \frac{p_3^{13}p_4^{13}}{\left(p_3+p_4\right)^{26}}.
+  \frac{p_2^{11}p_4^{10}}{\left(p_2+p_4\right)^{21}}\cdot
+  \frac{p_3^{13}p_4^{13}}{\left(p_3+p_4\right)^{26}}
 \end{eqnarray*}
 
+where~$\sum p_i=1$ is understood.
 Players~$P_1$ and~$P_2$ are known to play together frequently and one
 might expect them to win more often when they play together than by
 chance.  Indeed, each matching has a scoreline of roughly 50-50,
@@ -1132,20 +1155,20 @@ team cohesion is in fact absent?
 Consider the following likelihood function:
 
 \begin{eqnarray}
-  \lefteqn{\mathcal{L}\left(p_G; p_1,p_2,p_3\right)=}\nonumber\\
-  & &   C\cdot\left(p_1+p_2+p_G\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
+  \lefteqn{\mathcal{L}\left(\pG; p_1,p_2,p_3,p_4\right)=}\nonumber\\
+  & &   C\cdot\left(p_1+p_2+\pG\right)^{9}\left(p_3+p_4\right)^{2}\,\cdot\,
   \frac{\left(p_1+p_3\right)^{4}\left(p_2+p_4\right)^{4}}{\left(p_1+p_2+p_3+p_4\right)^{8}}\cdot\ldots
 \end{eqnarray}
 
 which formalizes the effectiveness of team cohesion in terms of a
-`ghost' player with skill~$p_G$ who accounts for the additional skill
+`ghost' player with skill~$\pG$ who accounts for the additional skill
 arising when~$P_1$ and~$P_2$ play together; the null is then
-simply~$p_G=0$.
+simply~$\pG=0$.
 
 It is straightforward to apply the method of support.  Function
 \code{maximum_likelihood()} takes a \code{zero} argument that specifies which
 components of the~$p_i$ are to be constrained at zero; here we specify
-that~$p_G=0$:
+that~$\pG=0$:
 
 <<print_data_doubles,echo=FALSE,print=FALSE,cache=FALSE>>=
 data("doubles")

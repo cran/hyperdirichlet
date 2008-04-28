@@ -3,7 +3,7 @@
 \alias{pollen}
 \docType{data}
 \title{
-Serum data from Mosimann 1962
+Pollen data from Mosimann 1962
 }
 \description{
 Data from Mosimann 1962 detailing forest pollen counts 

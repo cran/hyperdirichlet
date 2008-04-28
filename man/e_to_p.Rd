@@ -51,9 +51,17 @@ Jacobian(e)
   The functions documented here return a scalar.
 }
 \references{
-  M. Evans and T. Swartz 2000. \emph{Approximating Integrals via Monte
-    Carlo and Deterministic Methods}, Oxford University Press; page 28
+  \itemize{
+    \item
+    M. Evans and T. Swartz 2000. \emph{Approximating Integrals via Monte
+      Carlo and Deterministic Methods}, Oxford University Press; page 28
+    \item
+    Robin K. S. Hankin (2010).
+    \dQuote{A Generalization of the Dirichlet Distribution},
+    \emph{Journal of Statistical Software}, 33(11), 1-18,
+    \url{http://www.jstatsoft.org/v33/i11/}
   }
+}
 \author{Robin K. S. Hankin}
 \note{
 To do a regular simplex, use the \dQuote{di} of the right-angled

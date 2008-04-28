@@ -1,0 +1,19 @@
+citHeader("To cite hyperdirichlet in publications use:")
+
+citEntry(entry = "Article",
+  title        = "A Generalization of the Dirichlet Distribution",
+  author       = personList(as.person("Robin K. S. Hankin")),
+  journal      = "Journal of Statistical Software",
+  year         = "2010",
+  volume       = "33",
+  number       = "11",
+  pages        = "1--18",
+  url          = "http://www.jstatsoft.org/v33/i11/",
+
+  textVersion  =
+  paste("Robin K. S. Hankin (2010).",
+        "A Generalization of the Dirichlet Distribution.",
+        "Journal of Statistical Software, 33(11), 1-18.",
+        "URL http://www.jstatsoft.org/v33/i11/.")
+)
+
