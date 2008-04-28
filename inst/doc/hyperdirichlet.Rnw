@@ -13,7 +13,7 @@
 
 
 %% just as usual
-\author{Robin K. S. Hankin\\University of Cambridge}
+\author{Robin K. S. Hankin\\Auckland University of Technology}
 \title{A Generalization of the Dirichlet Distribution}
 %\VignetteIndexEntry{The hyperdirichlet distribution}
 
@@ -64,11 +64,7 @@ optimization}
 %% in the following format:
 \Address{
   Robin K. S. Hankin\\
-  Department of Land Economy; supported by The Tyndall Centre\\
-  University of Cambridge\\
-  19 Silver Street\\
-  Cambridge CB3 9EP\\
-  United Kingdom\\
+  Auckland University of Technology\\
   E-mail: \email{hankin.robin@gmail.com}
 }
 %% It is also possible to add a telephone and fax number
@@ -568,6 +564,18 @@ data("chess")
 (w <- as.hyperdirichlet(chess))
 @
 
+
+<<echo=FALSE,print=FALSE>>=
+if(calc_from_scratch){
+  w <- as.hyperdirichlet(w , calculate_NC = TRUE)
+  z.chess <- triplot(w,l=plot_quality)
+} else {
+    ignore <- 0
+}
+@
+
+
+
 thus \proglang{R} object {\tt w} corresponds to~$H(\mcw)$.  This simple example
 shows how a matrix, each row of which corresponds to repeated
 multinomial trials (here restricted to two outcomes), may be coerced
@@ -583,13 +591,6 @@ the~$2^k=8$ subsets respectively.  Although these two columns give
 identical information, having both displayed simultaneously avoids
 much confusion in practice.
 
-<<calculateChessNC,echo=FALSE,print=FALSE,cache=TRUE>>=
-if(calc_from_scratch){
-  w <- as.hyperdirichlet(w , calculate_NC = TRUE)
-  z.chess <- triplot(w,l=plot_quality)
-}
-@ 
-
 
 <<plotChess_dostuff,echo=FALSE,print=FALSE>>=
 png("plotChess.png",width=800,height=800)
@@ -604,7 +605,6 @@ png("plotChess.png",width=800,height=800)
   text(0.4, 0.97 , "Anand")
 dev.off()
 @ 
-
 
 
 \begin{figure}[htbp]

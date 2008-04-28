@@ -1,3 +1,9 @@
 exportPattern("^[^\\.]")
 importFrom(utils,head,tail)
+importFrom(cubature,adaptIntegrate)
 exportMethods(show,Arith)
+import("methods")
+import("mvtnorm")
+import("aylmer")
+import("abind")
+
