@@ -12,7 +12,8 @@
 
 
 %% just as usual
-\author{P. M. E. Altham and Robin K. S. Hankin\\University of Cambridge}
+\author{P. M. E. Altham and Robin K. S. Hankin\\Auckland University of
+Technology}
 \title{Correspondence: Using recently developed software on a $\mathbf{\twobytwo}$ table of matched pairs with incompletely
   classified data}
 %\VignetteIndexEntry{The hyperdirichlet distribution in practice}
@@ -33,8 +34,7 @@
   recently developed techniques and software written in the
   \proglang{R} programming language.  
 
-  This vignette is based on a manuscript submitted to the Journal of
-  the Royal Statistical Society Series C, as correspondence.
+  This vignette is based on~\cite{altham2010}.
 
   For reasons of performance, this vignette uses a preloaded dataset
   (`here's one I prepared earlier').  To calculate the dataset from
@@ -62,11 +62,7 @@ Wilberforce Road\\
 Cambridge CB3 0WB\\
 \\
 Robin K. S. Hankin (corresponding author)\\
-  Cambridge Centre for Climate Change Mitigation Research\\
-  University of Cambridge\\
-  19 Silver Street\\
-  Cambridge CB3 9EP\\
-  United Kingdom\\
+  Auckland University of Technology, New Zealand\\
   E-mail: \email{hankin.robin@gmail.com}\\
   URL: \url{http://www.landecon.cam.ac.uk/staff/profiles/rhankin.htm}
 }
@@ -264,7 +260,7 @@ b[13] <-   2
 b
 @ 
 
-is the appropriate hyperdirichlet distribution.  The hyperdirichlet
+is the appropriate hyperdirichlet distribution.  The \pkg{hyperdirichlet}
 \proglang{R} package gives~$\Prob(\theta_{01} > \theta_{10} | D)
 =0.969$ (further computational details are given online
 by~\citet{altham2009}):
@@ -286,7 +282,7 @@ Reviewer~1.  This agrees well with the value of~0.968 given
 by~\citeauthor{lin2009} in their Table~3.
 
 Figure~\ref{prior_posterior} shows some numerical results made using the
-hyperdirichlet \proglang{R} package~\citep{hankin2009}.
+\pkg{hyperdirichlet} \proglang{R} package~\citep{hankin2009}.
 
 <<generate_data,echo=FALSE,print=FALSE,cache=TRUE>>=
 if(calculate_from_scratch){
@@ -422,10 +418,10 @@ where~$\theta_{01}<\theta_{10}$.
 
 \subsection*{Conclusions}
 
-Our analysis has added to the techniques which practising statisticians may
-bring to bear on the analysis of this type of \twobytwo\ table, and we hope to
-stimulate interest in the aylmer and hyperdirichlet \proglang{R} packages.
-
+Our analysis has added to the techniques which practising
+statisticians may bring to bear on the analysis of this type of
+\twobytwo\ table, and we hope to stimulate interest in the
+\pkg{aylmer} and \pkg{hyperdirichlet} \proglang{R} packages.
 
 \bibliography{hyperdirichlet}
 \end{document}

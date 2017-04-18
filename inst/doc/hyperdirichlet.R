@@ -13,7 +13,7 @@ calc_from_scratch <- FALSE
 
 
 ###################################################
-### code chunk number 3: hyperdirichlet.Rnw:105-106
+### code chunk number 3: hyperdirichlet.Rnw:103-104
 ###################################################
 ignore <- require(hyperdirichlet,quietly=TRUE)
 
@@ -98,7 +98,7 @@ data("chess")
 
 
 ###################################################
-### code chunk number 9: hyperdirichlet.Rnw:568-574
+### code chunk number 9: hyperdirichlet.Rnw:566-572
 ###################################################
 if(calc_from_scratch){
   w <- as.hyperdirichlet(w , calculate_NC = TRUE)

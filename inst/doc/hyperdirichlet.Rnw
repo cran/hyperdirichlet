@@ -34,12 +34,10 @@
   disciplines including sports statistics, the sociology of climate
   change, and psephology.
 
-  This vignette is based on a manuscript currently under review at the
-  Journal of Statistical Software.  For reasons of performance, some
-  of the more computationally expensive results are pre-loaded.  To
-  calculate them from scratch, change ``\code{calc\_from\_scratch <-
-    TRUE}'' to ``\code{calc\_from\_scratch <- FALSE}'' in chunk
-  \code{time\_saver}.
+  For reasons of performance, some of the more computationally
+  expensive results are pre-loaded.  To calculate them from scratch,
+  change ``\code{calc\_from\_scratch <- TRUE}'' to
+  ``\code{calc\_from\_scratch <- FALSE}'' in chunk \code{time\_saver}.
   
 }
 

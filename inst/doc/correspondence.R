@@ -34,7 +34,7 @@ f1 <- function(a)a[2,3]
 
 
 ###################################################
-### code chunk number 6: correspondence.Rnw:194-195
+### code chunk number 6: correspondence.Rnw:190-191
 ###################################################
 aylmer.test(a,alternative=f1)
 

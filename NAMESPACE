@@ -7,3 +7,5 @@ import("mvtnorm")
 import("aylmer")
 import("abind")
 
+importFrom("graphics", "contour", "image", "segments", "text")
+importFrom("stats", "cov", "nlm", "optim", "quantile", "runif")
