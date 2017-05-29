@@ -4,12 +4,15 @@
 \alias{show}
 \alias{dim,hyperdirichlet-method}
 \alias{show,hyperdirichlet-method}
+\alias{print_hyperdirichlet}
+\alias{print_hyperdirichlet_worker}
 \title{Print and various S4 methods for hyperdirichlet objects}
 \description{
   Print method for hyperdirichlet objects
 }
 \usage{
- print.hyperdirichlet(x, n = 0, do_head = TRUE, ...)
+ print_hyperdirichlet(x, n=0, do_head, ...)
+ print_hyperdirichlet_worker(x, n=0, do_head, ...)
  \S4method{dim}{hyperdirichlet}(x)
  \S4method{show}{hyperdirichlet}(object)
 }
@@ -26,9 +29,8 @@
 \details{
 
 The matrix itself is printed using internal functions
-\code{.print_hyperdirichlet()} and
-\code{.print_hyperdirichlet_worker()}, which are not intended for the
-end user.
+\code{print_hyperdirichlet()} and \code{print_hyperdirichlet_worker()},
+which are not intended for the end user.
 
 }
 \author{Robin K. S. Hankin}

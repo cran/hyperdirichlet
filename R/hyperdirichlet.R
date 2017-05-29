@@ -255,11 +255,11 @@ setAs("matrix" , "hyperdirichlet",
 }
 
 ".head_hyperdirichlet" <- function(x, n=6, ...){
-  .print_hyperdirichlet(x, n=n, do_head = TRUE, ...)
+  print_hyperdirichlet(x, n=n, do_head = TRUE, ...)
 }
 
 ".tail_hyperdirichlet" <- function(x, n=6, ...){
-  .print_hyperdirichlet(x, n=n, do_head = FALSE, ...)
+  print_hyperdirichlet(x, n=n, do_head = FALSE, ...)
 }
 
 setGeneric("head")
@@ -268,7 +268,7 @@ setGeneric("tail")
 setMethod("head" , signature="hyperdirichlet" , .head_hyperdirichlet)
 setMethod("tail" , signature="hyperdirichlet" , .tail_hyperdirichlet)
 
-".print_hyperdirichlet_worker" <- 
+"print_hyperdirichlet_worker" <- 
 function(x, n=0, do_head = NA, ...){ # This function does the work
   out <- cbind(binmat(dim(x),pnames=pnames(x)),params=params(x),powers=powers(x))
   rownames(out) <- paste("[", seq_len(nrow(out)),"]",sep="")
@@ -283,8 +283,8 @@ function(x, n=0, do_head = NA, ...){ # This function does the work
   }
 }
     
-".print_hyperdirichlet" <- function(x, n=0, do_head = TRUE, ...){
-  jj <- .print_hyperdirichlet_worker(x, n=n, do_head=do_head, ...)
+"print_hyperdirichlet" <- function(x, n=0, do_head = TRUE, ...){
+  jj <- print_hyperdirichlet_worker(x, n=n, do_head=do_head, ...)
   print(jj)
   cat("\n")
   if(is.na(NC(x))){
@@ -297,7 +297,7 @@ function(x, n=0, do_head = NA, ...){ # This function does the work
 }
 
 setMethod("show", "hyperdirichlet",
-          function(object){.print_hyperdirichlet(object)}
+          function(object){print_hyperdirichlet(object)}
           )
 
 ".get_logical" <- function(x){   
